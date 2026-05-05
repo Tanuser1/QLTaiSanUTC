@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type StatusType = 'active' | 'maintenance' | 'pending' | 'inactive';
+export type StatusType = 'active' | 'maintenance' | 'pending' | 'inactive' | 'ready';
 
 interface StatusChipProps {
   status: StatusType;
@@ -32,6 +32,12 @@ const statusConfig: Record<StatusType, { label: string; bg: string; text: string
     bg: 'rgba(116, 119, 125, 0.1)',
     text: '#74777d',
     dot: '#74777d',
+  },
+  ready: {
+    label: 'SẴN DÙNG',
+    bg: '#e0f2f1',
+    text: '#00796b',
+    dot: '#00796b',
   },
 };
 

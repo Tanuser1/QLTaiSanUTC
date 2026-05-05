@@ -218,12 +218,12 @@ const BentoCard: React.FC<{ tile: BentoTile }> = ({ tile }) => {
    RECENT ACTIVITY PANEL
 ───────────────────────────────────────────────────────────── */
 const ACTIVITY = [
-  { dot: '#ef5350', text: 'MB-002 được đưa vào bảo trì',       time: '10 phút trước' },
-  { dot: '#ffa726', text: 'Yêu cầu cấp Laptop #YC-089 mới',    time: '32 phút trước' },
-  { dot: '#43a047', text: 'Kiểm tra phòng Lab A1 hoàn tất',    time: '1 giờ trước'   },
-  { dot: '#4dd0e1', text: 'Thêm mới 5 máy chiếu Epson',        time: '2 giờ trước'   },
-  { dot: '#303f9f', text: 'Cập nhật firmware Switch D-Link',    time: '3 giờ trước'   },
-  { dot: '#7e57c2', text: 'Thanh lý 12 bộ bàn ghế cũ P.303',   time: 'Hôm qua'       },
+  { dot: '#ef5350', text: 'MB-002 được đưa vào bảo trì', time: '10 phút trước' },
+  { dot: '#ffa726', text: 'Yêu cầu cấp Laptop #YC-089 mới', time: '32 phút trước' },
+  { dot: '#43a047', text: 'Kiểm tra phòng Lab A1 hoàn tất', time: '1 giờ trước' },
+  { dot: '#4dd0e1', text: 'Thêm mới 5 máy chiếu Epson', time: '2 giờ trước' },
+  { dot: '#303f9f', text: 'Cập nhật firmware Switch D-Link', time: '3 giờ trước' },
+  { dot: '#7e57c2', text: 'Thanh lý 12 bộ bàn ghế cũ P.303', time: 'Hôm qua' },
 ];
 
 /* ─────────────────────────────────────────────────────────────
@@ -231,10 +231,7 @@ const ACTIVITY = [
 ───────────────────────────────────────────────────────────── */
 const DashboardPage: React.FC = () => {
   return (
-    <MainLayout
-      title="Dashboard Tổng quan"
-      breadcrumbs={[{ label: 'Trang chủ', href: '/' }, { label: 'Dashboard' }]}
-    >
+    <div className="flex-1 p-10 flex flex-col">
       {/* ── PAGE HEADING ── */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -340,12 +337,12 @@ const DashboardPage: React.FC = () => {
 
           <div className="px-5 py-4 flex flex-col gap-3">
             {[
-              { label: 'Máy tính phòng Lab',       pct: 68, count: '450',  color: '#303f9f' },
-              { label: 'Bàn ghế sinh viên',         pct: 52, count: '1.315', color: '#00796b' },
-              { label: 'Linh kiện',                 pct: 40, count: '320',  color: '#ffa726' },
-              { label: 'Micro & Âm thanh',          pct: 22, count: '150',  color: '#4dd0e1' },
-              { label: 'Máy chiếu',                 pct: 18, count: '120',  color: '#ee665f' },
-              { label: 'Laptop Cán bộ',             pct: 8,  count: '60',   color: '#7e57c2' },
+              { label: 'Máy tính phòng Lab', pct: 68, count: '450', color: '#303f9f' },
+              { label: 'Bàn ghế sinh viên', pct: 52, count: '1.315', color: '#00796b' },
+              { label: 'Linh kiện', pct: 40, count: '320', color: '#ffa726' },
+              { label: 'Micro & Âm thanh', pct: 22, count: '150', color: '#4dd0e1' },
+              { label: 'Máy chiếu', pct: 18, count: '120', color: '#ee665f' },
+              { label: 'Laptop Cán bộ', pct: 8, count: '60', color: '#7e57c2' },
             ].map((cat) => (
               <div key={cat.label} className="flex flex-col gap-1">
                 <div className="flex items-center justify-between">
@@ -371,7 +368,7 @@ const DashboardPage: React.FC = () => {
         </div>
 
       </div>
-    </MainLayout>
+    </div>
   );
 };
 

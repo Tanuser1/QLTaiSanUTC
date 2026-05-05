@@ -15,10 +15,7 @@ const AssetListPage: React.FC = () => {
   };
 
   return (
-    <MainLayout
-      title="Danh sách Tài sản"
-      breadcrumbs={[{ label: 'Trang chủ', href: '/' }, { label: 'Quản lý Tài sản' }, { label: 'Danh sách' }]}
-    >
+    <div className="flex-1 p-10 flex flex-col">
       <AssetTable onAddAsset={() => setShowAddModal(true)} />
 
       {/* Add Asset Modal */}
@@ -189,7 +186,7 @@ const AssetListPage: React.FC = () => {
           </div>
         </div>
       )}
-    </MainLayout>
+    </div>
   );
 };
 

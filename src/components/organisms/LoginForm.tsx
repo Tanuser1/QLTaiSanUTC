@@ -15,23 +15,17 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
 
   const validate = () => {
     const errs: typeof errors = {};
-    if (!email) errs.email = 'Vui lòng nhập email';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = 'Email không hợp lệ';
-    if (!password) errs.password = 'Vui lòng nhập mật khẩu';
-    else if (password.length < 6) errs.password = 'Mật khẩu tối thiểu 6 ký tự';
+    // Tạm thời bỏ qua toàn bộ kiểm tra nhập liệu để click là vào luôn
     return errs;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const errs = validate();
-    if (Object.keys(errs).length) {
-      setErrors(errs);
-      return;
-    }
+    
+    // Xóa hết lỗi và cho phép qua luôn
     setErrors({});
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
+    await new Promise((r) => setTimeout(r, 300)); // Giảm thời gian chờ ảo từ 1.2s xuống 0.3s cho mượt
     setLoading(false);
     if (onLogin) onLogin(email, password);
     else {

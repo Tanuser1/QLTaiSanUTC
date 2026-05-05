@@ -9,30 +9,31 @@ import Button from '../atoms/Button';
 import type { StatusType } from '../atoms/StatusChip';
 
 const MOCK_DATA: TableRowData[] = [
-  { id: '1',  assetCode: 'MB-001', assetName: 'Máy tính Dell Latitude 5540', category: 'Máy tính', location: 'Phòng KH-01', assignedTo: 'Nguyễn Văn A', status: 'active',      purchaseDate: '12/03/2023', value: '28.500.000 ₫' },
-  { id: '2',  assetCode: 'MB-002', assetName: 'Máy tính HP ProBook 450', category: 'Máy tính', location: 'Phòng KT-02', assignedTo: 'Trần Thị B',   status: 'maintenance', purchaseDate: '05/07/2022', value: '22.000.000 ₫', attention: true },
-  { id: '3',  assetCode: 'MN-001', assetName: 'Màn hình LG 27" 4K',         category: 'Màn hình',  location: 'Phòng IT-01', assignedTo: 'Lê Minh C',    status: 'active',      purchaseDate: '18/01/2024', value: '12.000.000 ₫' },
-  { id: '4',  assetCode: 'MF-003', assetName: 'Máy fax Canon L170',          category: 'Thiết bị',  location: 'Văn phòng',   assignedTo: 'Phạm Thu D',   status: 'inactive',    purchaseDate: '22/09/2020', value: '3.200.000 ₫'  },
-  { id: '5',  assetCode: 'XM-001', assetName: 'Xe máy Honda Wave RSX',       category: 'Phương tiện', location: 'Bãi xe',    assignedTo: 'Hoàng Văn E',  status: 'active',      purchaseDate: '30/04/2021', value: '45.000.000 ₫' },
-  { id: '6',  assetCode: 'MB-003', assetName: 'MacBook Air M2 13"',          category: 'Máy tính', location: 'BGĐ',         assignedTo: 'Vũ Thị F',     status: 'active',      purchaseDate: '10/08/2023', value: '32.000.000 ₫' },
-  { id: '7',  assetCode: 'MF-004', assetName: 'Máy chiếu Epson EB-S41',      category: 'Thiết bị',  location: 'Phòng họp A', assignedTo: 'Đỗ Thành G',  status: 'pending',     purchaseDate: '15/11/2023', value: '9.800.000 ₫', attention: true },
-  { id: '8',  assetCode: 'IN-001', assetName: 'Máy in HP LaserJet Pro',       category: 'Thiết bị',  location: 'Phòng KT-02', assignedTo: 'Ngô Bảo H',   status: 'maintenance', purchaseDate: '02/06/2022', value: '6.500.000 ₫'  },
-  { id: '9',  assetCode: 'XO-001', assetName: 'Xe ô tô Toyota Innova 2.0',   category: 'Phương tiện', location: 'Bãi xe',    assignedTo: 'Đặng Hữu I',  status: 'active',      purchaseDate: '17/03/2019', value: '680.000.000 ₫' },
-  { id: '10', assetCode: 'MB-004', assetName: 'Máy tính Lenovo ThinkPad X1',  category: 'Máy tính', location: 'Phòng IT-02', assignedTo: 'Bùi Lan J',    status: 'active',      purchaseDate: '28/02/2024', value: '36.000.000 ₫' },
+  { id: '1', assetCode: 'MB-001', assetName: 'Máy tính Dell Latitude 5540', category: 'Máy tính', location: 'Phòng KH-01', assignedTo: 'Nguyễn Văn A', status: 'ready', value: '28.500.000 ₫', specs: 'Core i5, 16GB RAM, 512GB SSD', assetType: 'Cố định' },
+  { id: '2', assetCode: 'MB-002', assetName: 'Máy tính HP ProBook 450', category: 'Máy tính', location: 'Phòng KT-02', assignedTo: 'Trần Thị B', status: 'maintenance', value: '22.000.000 ₫', attention: true, specs: 'Core i5, 8GB RAM, 256GB SSD', assetType: 'Cố định' },
+  { id: '3', assetCode: 'MN-001', assetName: 'Màn hình LG 27" 4K', category: 'Màn hình', location: 'Phòng IT-01', assignedTo: 'Lê Minh C', status: 'active', value: '12.000.000 ₫', specs: '27 inch, 4K UHD, 60Hz', assetType: 'Cố định' },
+  { id: '4', assetCode: 'MF-003', assetName: 'Máy fax Canon L170', category: 'Thiết bị', location: 'Văn phòng', assignedTo: 'Phạm Thu D', status: 'inactive', value: '3.200.000 ₫', specs: 'In Laser đen trắng', assetType: 'Vật tư' },
+  { id: '5', assetCode: 'XM-001', assetName: 'Xe máy Honda Wave RSX', category: 'Phương tiện', location: 'Bãi xe', assignedTo: 'Hoàng Văn E', status: 'active', value: '45.000.000 ₫', specs: '110cc', assetType: 'Cố định' },
+  { id: '6', assetCode: 'MB-003', assetName: 'MacBook Air M2 13"', category: 'Máy tính', location: 'BGĐ', assignedTo: 'Vũ Thị F', status: 'ready', value: '32.000.000 ₫', specs: 'M2, 8GB RAM, 256GB SSD', assetType: 'Cố định' },
+  { id: '7', assetCode: 'MF-004', assetName: 'Máy chiếu Epson EB-S41', category: 'Thiết bị', location: 'Phòng họp A', assignedTo: 'Đỗ Thành G', status: 'pending', value: '9.800.000 ₫', attention: true, specs: '3300 Ansi Lumens', assetType: 'Cố định' },
+  { id: '8', assetCode: 'IN-001', assetName: 'Máy in HP LaserJet Pro', category: 'Thiết bị', location: 'Phòng KT-02', assignedTo: 'Ngô Bảo H', status: 'maintenance', value: '6.500.000 ₫', specs: 'In Laser, Wifi', assetType: 'Vật tư' },
+  { id: '9', assetCode: 'XO-001', assetName: 'Xe ô tô Toyota Innova 2.0', category: 'Phương tiện', location: 'Bãi xe', assignedTo: 'Đặng Hữu I', status: 'active', value: '680.000.000 ₫', specs: '7 chỗ, số tự động', assetType: 'Cố định' },
+  { id: '10', assetCode: 'MB-004', assetName: 'Máy tính Lenovo ThinkPad X1', category: 'Máy tính', location: 'Phòng IT-02', assignedTo: 'Bùi Lan J', status: 'ready', value: '36.000.000 ₫', specs: 'Core i7, 16GB RAM, 512GB SSD', assetType: 'Cố định' },
 ];
 
 type SortKey = keyof TableRowData | null;
 type SortDir = 'asc' | 'desc';
 
 const COLUMNS = [
-  { key: 'assetCode',    label: 'Mã TS',      sortable: true },
-  { key: 'assetName',    label: 'Tên tài sản', sortable: true },
-  { key: 'category',     label: 'Danh mục',   sortable: true },
-  { key: 'location',     label: 'Vị trí',      sortable: true },
-  { key: 'assignedTo',   label: 'Phụ trách',  sortable: true },
+  { key: 'assetCode',    label: 'Mã',      sortable: true },
+  { key: 'assetName',    label: 'Tên thiết bị', sortable: true },
+  { key: 'category',     label: 'Loại',   sortable: true },
+  { key: 'value',        label: 'Giá',     sortable: true },
+  { key: 'assignedTo',   label: 'Người dùng',  sortable: true },
+  { key: 'specs',        label: 'Cấu hình', sortable: false },
+  { key: 'location',     label: 'Phòng',      sortable: true },
   { key: 'status',       label: 'Trạng thái', sortable: false },
-  { key: 'purchaseDate', label: 'Ngày mua',   sortable: true },
-  { key: 'value',        label: 'Giá trị',     sortable: false },
+  { key: 'assetType',    label: 'Kiểu thiết bị', sortable: true },
 ] as const;
 
 const STATUS_LABELS: Record<StatusType, string> = {
@@ -40,6 +41,7 @@ const STATUS_LABELS: Record<StatusType, string> = {
   maintenance: 'Bảo trì',
   pending: 'Chờ duyệt',
   inactive: 'Ngừng dùng',
+  ready: 'SẴN DÙNG',
 };
 
 interface AssetTableProps {
@@ -130,6 +132,10 @@ export const AssetTable: React.FC<AssetTableProps> = ({ onAddAsset }) => {
     >
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3 px-5 py-4 border-b border-[#e1e3e4]">
+        <h2 className="text-[17px] font-bold text-[#041627] mr-2" style={{ fontFamily: 'Manrope, sans-serif' }}>
+          Tìm thấy 94 Thiết Bị
+        </h2>
+        
         {/* Search */}
         <div className="relative flex items-center flex-1 min-w-[200px] max-w-xs">
           <Search size={15} className="absolute left-3 text-[#74777d] pointer-events-none" />
@@ -138,8 +144,18 @@ export const AssetTable: React.FC<AssetTableProps> = ({ onAddAsset }) => {
             value={search}
             onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
             placeholder="Tìm kiếm..."
-            className="w-full pl-9 pr-3 py-1.5 text-sm border border-[#c4c6cd] rounded bg-[#f3f4f5] focus:bg-white focus:border-[#26a69a] focus:ring-1 focus:ring-[#26a69a] outline-none transition-all"
+            className="w-full pl-9 pr-3 py-1.5 text-sm border border-[#c4c6cd] rounded bg-[#f3f4f5] focus:bg-white focus:border-[#00796b] focus:ring-1 focus:ring-[#00796b] outline-none transition-all"
           />
+        </div>
+
+        {/* Rows per page dropdown */}
+        <div className="flex items-center gap-1 border border-[#c4c6cd] rounded px-2 py-1.5 bg-white ml-2">
+          <span className="text-sm text-[#44474c]">Hiển thị</span>
+          <select className="text-sm text-[#191c1d] outline-none bg-transparent font-semibold cursor-pointer">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
         </div>
 
         {/* Status filter */}
@@ -148,7 +164,7 @@ export const AssetTable: React.FC<AssetTableProps> = ({ onAddAsset }) => {
           <select
             value={filterStatus}
             onChange={(e) => { setFilterStatus(e.target.value as StatusType | 'all'); setCurrentPage(1); }}
-            className="text-sm border border-[#c4c6cd] rounded px-2 py-1.5 bg-white text-[#191c1d] focus:border-[#26a69a] outline-none cursor-pointer"
+            className="text-sm border border-[#c4c6cd] rounded px-2 py-1.5 bg-white text-[#191c1d] focus:border-[#00796b] outline-none cursor-pointer"
           >
             <option value="all">Tất cả trạng thái</option>
             {(Object.entries(STATUS_LABELS) as [StatusType, string][]).map(([k, v]) => (
@@ -161,7 +177,7 @@ export const AssetTable: React.FC<AssetTableProps> = ({ onAddAsset }) => {
 
         {/* Actions */}
         {selected.size > 0 && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mr-2">
             <span className="text-xs text-[#74777d]">Đã chọn {selected.size}</span>
             <button className="flex items-center gap-1.5 text-xs text-[#ef5350] hover:bg-[#ef5350]/10 px-2 py-1.5 rounded transition-colors">
               <Trash2 size={13} />
@@ -169,30 +185,34 @@ export const AssetTable: React.FC<AssetTableProps> = ({ onAddAsset }) => {
             </button>
           </div>
         )}
-        <Button
-          variant="secondary"
-          size="sm"
-          icon={<Download size={14} />}
+        <button
+          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded border border-[#c4c6cd] text-[#44474c] bg-white hover:bg-[#f3f4f5] transition-colors"
         >
-          Xuất Excel
-        </Button>
-        <Button
-          variant="primary"
-          size="sm"
-          icon={<Plus size={14} />}
+          <Filter size={14} />
+          LỌC
+        </button>
+        <button
+          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded border border-[#c4c6cd] text-[#44474c] bg-white hover:bg-[#f3f4f5] transition-colors"
+        >
+          <Download size={14} />
+          EXPORT
+        </button>
+        <button
           onClick={onAddAsset}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded text-white bg-[#00796b] hover:bg-[#00695c] transition-colors shadow-sm"
         >
-          Thêm tài sản
-        </Button>
+          <Plus size={14} />
+          + THÊM MỚI
+        </button>
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto flex-1">
+      <div className="overflow-x-auto flex-1" style={{ fontFamily: 'Inter, sans-serif' }}>
         <table className="w-full text-left border-collapse" style={{ minWidth: '900px' }}>
           <thead className="sticky top-0 z-10">
             <tr
-              className="border-b border-[#e1e3e4]"
-              style={{ backgroundColor: '#f3f4f5' }}
+              className="border-b border-[#00695c]"
+              style={{ backgroundColor: '#00796b', color: '#ffffff' }}
             >
               <th className="px-3 py-3 w-10">
                 <input
@@ -206,8 +226,8 @@ export const AssetTable: React.FC<AssetTableProps> = ({ onAddAsset }) => {
               {COLUMNS.map((col) => (
                 <th
                   key={col.key}
-                  className={`px-3 py-3 text-[11px] font-semibold text-[#44474c] uppercase tracking-wider whitespace-nowrap
-                    ${col.sortable ? 'cursor-pointer hover:text-[#191c1d] select-none' : ''}
+                  className={`px-3 py-3 text-[11px] font-semibold text-white uppercase tracking-wider whitespace-nowrap
+                    ${col.sortable ? 'cursor-pointer hover:text-gray-200 select-none' : ''}
                     ${col.key === 'value' ? 'text-right' : ''}
                   `}
                   onClick={() => col.sortable && handleSort(col.key as SortKey)}
@@ -218,6 +238,8 @@ export const AssetTable: React.FC<AssetTableProps> = ({ onAddAsset }) => {
                   </span>
                 </th>
               ))}
+              <th className="px-3 py-3 text-[11px] font-semibold text-white uppercase tracking-wider whitespace-nowrap">Xem</th>
+              <th className="px-3 py-3 text-[11px] font-semibold text-white uppercase tracking-wider whitespace-nowrap">Xóa</th>
             </tr>
           </thead>
           <tbody>
@@ -244,7 +266,7 @@ export const AssetTable: React.FC<AssetTableProps> = ({ onAddAsset }) => {
       {/* Pagination */}
       <div className="flex items-center justify-between px-5 py-3 border-t border-[#e1e3e4] bg-[#f8f9fa]">
         <span className="text-xs text-[#74777d]">
-          Hiển thị {Math.min((currentPage - 1) * rowsPerPage + 1, filteredData.length)}–{Math.min(currentPage * rowsPerPage, filteredData.length)} / {filteredData.length} tài sản
+          Showing {Math.min((currentPage - 1) * rowsPerPage + 1, 94)} to {Math.min(currentPage * rowsPerPage, 94)} of 94 entries
         </span>
         <div className="flex items-center gap-1">
           <button
@@ -260,7 +282,7 @@ export const AssetTable: React.FC<AssetTableProps> = ({ onAddAsset }) => {
               onClick={() => setCurrentPage(p)}
               className={`w-7 h-7 rounded text-xs flex items-center justify-center transition-colors
                 ${p === currentPage
-                  ? 'bg-[#002957] text-white font-semibold'
+                  ? 'bg-[#00796b] text-white font-semibold'
                   : 'text-[#44474c] hover:bg-[#e1e3e4]'
                 }`}
             >

@@ -7,8 +7,9 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLogin = (_email: string, _password: string) => {
-    // Simulate auth & redirect to dashboard
-    navigate('/');
+    // Bỏ qua mọi logic xác thực (auth) trong môi trường dev
+    // Chuyển thẳng sang trang Dashboard ngay khi click
+    navigate('/dashboard');
   };
 
   return (
