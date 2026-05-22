@@ -8,22 +8,32 @@ router.use(authMiddleware);
 
 /**
  * GET /api/loai-taisan
- * Query: ?NhomLoai=MayTinh&all=true (all=true trả cả loại con)
+ * Query: ?NhomLoai=MayTinh
+ * Trả về loại cha kèm children[] đã gắn sẵn.
  */
 router.get('/', async (req, res) => {
     try {
-        const { NhomLoai, all } = req.query;
+        const { NhomLoai } = req.query;
 
-        let where = 'WHERE IsDeleted = 0';
-        const params = [];
+        let parentWhere = 'WHERE MaLoaiCha IS NULL AND IsDeleted = 0';
+        const parentParams = [];
+        if (NhomLoai) { parentWhere += ' AND NhomLoai = ?'; parentParams.push(NhomLoai); }
 
-        if (all !== 'true') { where += ' AND MaLoaiCha IS NULL'; }
-        if (NhomLoai) { where += ' AND NhomLoai = ?'; params.push(NhomLoai); }
-
-        const [rows] = await db.query(
-            `SELECT * FROM LoaiTaiSan ${where} ORDER BY ThuTu, TenLoai`, params
+        const [parents]  = await db.query(
+            `SELECT * FROM LoaiTaiSan ${parentWhere} ORDER BY ThuTu, TenLoai`, parentParams
         );
-        res.json({ success: true, data: rows.map(mapDeviceCategory) });
+        const [children] = await db.query(
+            `SELECT * FROM LoaiTaiSan WHERE MaLoaiCha IS NOT NULL AND IsDeleted = 0 ORDER BY ThuTu, TenLoai`
+        );
+
+        const result = parents.map(parent =>
+            mapDeviceCategory({
+                ...parent,
+                LoaiCon: children.filter(c => c.MaLoaiCha === parent.MaLoai),
+            })
+        );
+
+        res.json({ success: true, data: result });
     } catch (error) {
         console.error('[LOAI GET ALL]', error);
         res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });

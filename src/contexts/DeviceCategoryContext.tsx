@@ -1,47 +1,32 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { DeviceCategory } from '../types/DeviceCategory';
 import { categoryService } from '../services/categoryService';
+import { authService } from '../services/authService';
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   CONTEXT SHAPE
-───────────────────────────────────────────────────────────────────────────── */
 interface DeviceCategoryContextValue {
-  /** Danh sách tất cả categories */
-  categories: DeviceCategory[];
-  /** Đang fetch lần đầu */
-  isLoading: boolean;
-  /** Lỗi nếu có */
-  error: string | null;
-  /** Gọi lại để refresh danh sách (sau CRUD) */
+  categories:        DeviceCategory[];
+  isLoading:         boolean;
+  error:             string | null;
   refreshCategories: () => void;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   CONTEXT + HOOK
-───────────────────────────────────────────────────────────────────────────── */
 const DeviceCategoryContext = createContext<DeviceCategoryContextValue | null>(null);
 
 export function useDeviceCategoryContext(): DeviceCategoryContextValue {
   const ctx = useContext(DeviceCategoryContext);
-  if (!ctx) {
-    throw new Error('useDeviceCategoryContext must be used inside <DeviceCategoryProvider>');
-  }
+  if (!ctx) throw new Error('useDeviceCategoryContext must be inside <DeviceCategoryProvider>');
   return ctx;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   PROVIDER
-───────────────────────────────────────────────────────────────────────────── */
-interface DeviceCategoryProviderProps {
-  children: React.ReactNode;
-}
-
-export const DeviceCategoryProvider: React.FC<DeviceCategoryProviderProps> = ({ children }) => {
+export const DeviceCategoryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [categories, setCategories] = useState<DeviceCategory[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading]   = useState(false);
+  const [error, setError]           = useState<string | null>(null);
 
   const fetchCategories = useCallback(async () => {
+    // Không gọi API khi chưa đăng nhập — tránh vòng lặp reload do 401
+    if (!authService.isAuthenticated()) return;
+
     setIsLoading(true);
     setError(null);
     try {
@@ -54,17 +39,11 @@ export const DeviceCategoryProvider: React.FC<DeviceCategoryProviderProps> = ({ 
     }
   }, []);
 
-  // Fetch lần đầu khi mount
   useEffect(() => { fetchCategories(); }, [fetchCategories]);
 
   return (
     <DeviceCategoryContext.Provider
-      value={{
-        categories,
-        isLoading,
-        error,
-        refreshCategories: fetchCategories,
-      }}
+      value={{ categories, isLoading, error, refreshCategories: fetchCategories }}
     >
       {children}
     </DeviceCategoryContext.Provider>

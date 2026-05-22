@@ -92,11 +92,10 @@ export const Sidebar: React.FC = () => {
     label: 'Thiết bị',
     icon: Monitor,
     children: [
-      { label: 'Tất cả', count: categories.reduce((s, c) => s + c.count, 0), to: '/assets' },
+      { label: 'Tất cả', to: '/assets' },
       ...categories.map((cat) => ({
         label: cat.name,
-        count: cat.count,
-        to: `/assets?cat=${cat.slug}`,
+        to: `/assets/${cat.id}`,
       })),
     ],
   };
