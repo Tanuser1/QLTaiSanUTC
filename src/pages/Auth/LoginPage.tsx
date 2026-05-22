@@ -1,19 +1,22 @@
 /**
  * pages/Auth/LoginPage.tsx
- * Di chuyển từ pages/LoginPage.tsx — giữ nguyên 100% logic và UI.
+ * Đăng nhập thật — gọi API backend qua useAuth hook.
+ *
+ * FIX: Bỏ useEffect tự redirect (gây vòng lặp reload khi token mock còn trong storage).
+ *      useAuth.login() tự navigate('/dashboard') sau khi login thành công.
  */
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import AuthLayout from '../../components/layout/AuthLayout';
 import LoginForm from '../../components/forms/LoginForm';
+import { useAuth } from '../../hooks/useAuth';
+import { Link } from 'react-router-dom';
 
 const LoginPage: React.FC = () => {
-  const navigate = useNavigate();
+  // login() trong useAuth sẽ tự gọi navigate('/dashboard') khi thành công
+  const { login, isLoading, error } = useAuth();
 
-  const handleLogin = (_email: string, _password: string) => {
-    // Bỏ qua mọi logic xác thực (auth) trong môi trường dev
-    // Chuyển thẳng sang trang Dashboard ngay khi click
-    navigate('/dashboard');
+  const handleLogin = async (tenDangNhap: string, matKhau: string) => {
+    await login(tenDangNhap, matKhau);
   };
 
   return (
@@ -27,14 +30,31 @@ const LoginPage: React.FC = () => {
         </p>
       </div>
 
-      <LoginForm onLogin={handleLogin} />
+      {/* Hiển thị lỗi từ backend hoặc lỗi network */}
+      {error && (
+        <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-600 flex items-start gap-2">
+          <span className="mt-0.5">⚠️</span>
+          <span>{error}</span>
+        </div>
+      )}
 
-      <div className="mt-6 pt-5 border-t border-[#e1e3e4]">
+      <LoginForm onLogin={handleLogin} isLoading={isLoading} />
+
+      <div className="mt-6 pt-5 border-t border-[#e1e3e4] flex flex-col gap-3">
         <p className="text-center text-xs text-[#74777d]">
           Cần hỗ trợ?{' '}
           <a href="mailto:support@utc.edu.vn" className="text-[#26a69a] hover:underline font-medium">
             Liên hệ quản trị viên
           </a>
+        </p>
+        <p className="text-center text-sm text-[#74777d]">
+          Chưa có tài khoản?{' '}
+          <Link
+            to="/register"
+            className="text-[#26a69a] hover:underline font-semibold transition-colors"
+          >
+            Đăng ký ngay
+          </Link>
         </p>
       </div>
     </AuthLayout>

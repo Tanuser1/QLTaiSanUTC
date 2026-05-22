@@ -1,6 +1,0 @@
-/**
- * src/styles/index.css
- * Alias/re-import từ src/index.css để tuân thủ cấu trúc thư mục mới.
- * styles/ là nơi tập trung CSS tokens và overrides.
- */
-@import url('../index.css');

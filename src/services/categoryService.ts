@@ -1,45 +1,71 @@
+/**
+ * src/services/categoryService.ts
+ * Gọi API thật tới backend /api/loai-taisan
+ */
+import apiClient from './apiClient';
 import type { DeviceCategory } from '../types/DeviceCategory';
 
-// Mock data
-const MOCK_CATEGORIES: DeviceCategory[] = [
-  { id: '1', name: 'Máy tính phòng Lab',    slug: 'may-tinh-phong-lab',    count: 450,  description: 'Máy tính dùng trong phòng thực hành' },
-  { id: '2', name: 'Máy chiếu giảng đường', slug: 'may-chieu-giang-duong', count: 120,  description: 'Máy chiếu dùng trong giảng đường' },
-  { id: '3', name: 'Thiết bị mạng',         slug: 'thiet-bi-mang',         count: 85,   description: 'Switch, Router, Access Point' },
-  { id: '4', name: 'Micro & Âm thanh',      slug: 'micro-am-thanh',        count: 150,  description: 'Hệ thống âm thanh, micro' },
-  { id: '5', name: 'Laptop Cán bộ',         slug: 'laptop-can-bo',         count: 60,   description: 'Laptop cấp cho cán bộ giảng viên' },
-  { id: '6', name: 'Linh kiện',             slug: 'linh-kien',             count: 320,  description: 'Linh kiện điện tử thay thế' },
-  { id: '7', name: 'Bàn ghế sinh viên',     slug: 'ban-ghe-sinh-vien',     count: 1315, description: 'Bàn ghế phòng học' },
-];
+function mapToCategory(l: any): DeviceCategory {
+  return {
+    id:          String(l.MaLoai),
+    name:        l.TenLoai,
+    slug:        l.KyHieu?.toLowerCase() || String(l.MaLoai),
+    count:       0, // API có thể bổ sung sau
+    description: l.GhiChu || l.NhomLoai || '',
+    // Trường gốc DB
+    KyHieu:      l.KyHieu,
+    NhomLoai:    l.NhomLoai,
+    ThuTu:       l.ThuTu,
+  };
+}
 
 export const categoryService = {
-  async getAll(): Promise<DeviceCategory[]> {
-    await new Promise((r) => setTimeout(r, 200));
-    return [...MOCK_CATEGORIES];
+  async getAll(NhomLoai?: string): Promise<DeviceCategory[]> {
+    const { data } = await apiClient.get('/loai-taisan', {
+      params: NhomLoai ? { NhomLoai } : undefined,
+    });
+    return (data.data as any[]).map(mapToCategory);
   },
 
-  async getById(id: string): Promise<DeviceCategory | undefined> {
-    await new Promise((r) => setTimeout(r, 100));
-    return MOCK_CATEGORIES.find((c) => c.id === id);
+  async getById(id: string): Promise<DeviceCategory & { LoaiCon: any[] }> {
+    const { data } = await apiClient.get(`/loai-taisan/${id}`);
+    const cat = mapToCategory(data.data) as DeviceCategory & { LoaiCon: any[] };
+    cat.LoaiCon = data.data.LoaiCon ?? [];
+    return cat;
   },
 
-  async create(data: Omit<DeviceCategory, 'id'>): Promise<DeviceCategory> {
-    await new Promise((r) => setTimeout(r, 300));
-    const newCat: DeviceCategory = { ...data, id: String(Date.now()) };
-    MOCK_CATEGORIES.push(newCat);
-    return newCat;
+  async create(form: {
+    TenLoai: string;
+    KyHieu?: string;
+    NhomLoai?: string;
+    GhiChu?: string;
+    ThuTu?: number;
+  }): Promise<DeviceCategory> {
+    const { data } = await apiClient.post('/loai-taisan', form);
+    return mapToCategory(data.data);
   },
 
-  async update(id: string, data: Partial<DeviceCategory>): Promise<DeviceCategory> {
-    await new Promise((r) => setTimeout(r, 300));
-    const idx = MOCK_CATEGORIES.findIndex((c) => c.id === id);
-    if (idx === -1) throw new Error('Category not found');
-    MOCK_CATEGORIES[idx] = { ...MOCK_CATEGORIES[idx], ...data };
-    return MOCK_CATEGORIES[idx];
+  async update(id: string, form: Partial<{
+    TenLoai: string;
+    KyHieu: string;
+    NhomLoai: string;
+    GhiChu: string;
+    ThuTu: number;
+  }>): Promise<DeviceCategory> {
+    const { data } = await apiClient.put(`/loai-taisan/${id}`, form);
+    return mapToCategory(data.data);
   },
 
   async delete(id: string): Promise<void> {
-    await new Promise((r) => setTimeout(r, 200));
-    const idx = MOCK_CATEGORIES.findIndex((c) => c.id === id);
-    if (idx !== -1) MOCK_CATEGORIES.splice(idx, 1);
+    await apiClient.delete(`/loai-taisan/${id}`);
+  },
+
+  // Quản lý loại con
+  async addChildType(parentId: string, MaLoaiCon: number, GhiChu?: string): Promise<void> {
+    await apiClient.post(`/loai-taisan/${parentId}/loai-con`, { MaLoaiCon, GhiChu });
+  },
+
+  async removeChildType(parentId: string, childId: string): Promise<void> {
+    await apiClient.delete(`/loai-taisan/${parentId}/loai-con/${childId}`);
   },
 };

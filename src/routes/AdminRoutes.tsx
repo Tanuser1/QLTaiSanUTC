@@ -1,10 +1,12 @@
 import React from 'react';
-import { Route, Outlet } from 'react-router-dom';
+import { Route, Outlet, Navigate } from 'react-router-dom';
 import { AdminLayout } from '../components/layout/AdminLayout';
+import { storage } from '../utils/storage';
 
 // ── Pages ──────────────────────────────────────────────────────────
 import DashboardPage           from '../pages/Dashboard/DashboardPage';
 import DeviceByCategoryPage    from '../pages/DeviceManagement/DeviceByCategoryPage';
+import RoomListPage            from '../pages/RoomManagement/RoomListPage';
 import RepairRoomPage          from '../pages/RoomManagement/RepairRoomPage';
 import DeviceRequestPage       from '../pages/RoomManagement/DeviceRequestPage';
 import InspectionSchedulePage  from '../pages/RoomManagement/InspectionSchedulePage';
@@ -20,13 +22,17 @@ import LiquidatedDevicePage    from '../pages/Reports/LiquidatedDevicePage';
 
 /**
  * ProtectedLayout – bọc AdminLayout + Outlet.
- * Tất cả route con render trong vùng main content của AdminLayout.
+ * Redirect về /login nếu không có token trong localStorage.
  */
-export const ProtectedLayout: React.FC = () => (
-  <AdminLayout>
-    <Outlet />
-  </AdminLayout>
-);
+export const ProtectedLayout: React.FC = () => {
+  const token = storage.get<string>('token');
+  if (!token) return <Navigate to="/login" replace />;
+  return (
+    <AdminLayout>
+      <Outlet />
+    </AdminLayout>
+  );
+};
 
 /**
  * AdminRoutes – danh sách tất cả route protected.
@@ -39,7 +45,7 @@ export const adminRouteElements = (
     <Route path="/dashboard"              element={<DashboardPage />} />
     <Route path="/assets"                 element={<DeviceByCategoryPage />} />
     <Route path="/assets/:id"             element={<DeviceByCategoryPage />} />
-    <Route path="/departments"            element={<RepairRoomPage />} />
+    <Route path="/departments"            element={<RoomListPage />} />
     <Route path="/maintenance"            element={<RepairRoomPage />} />
     <Route path="/requests"               element={<DeviceRequestPage />} />
     <Route path="/audit"                  element={<InspectionSchedulePage />} />

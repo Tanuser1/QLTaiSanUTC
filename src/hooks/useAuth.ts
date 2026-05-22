@@ -1,30 +1,28 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { AuthUser } from '../types/User';
+import type { AuthUser, UserRole } from '../types/auth.types';
 import { authService } from '../services/authService';
 
-interface UseAuthReturn {
-  user: AuthUser | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-}
+const ROLE_REDIRECT: Record<UserRole, string> = {
+  admin:      '/dashboard',
+  bgh:        '/dashboard',
+  technician: '/dashboard',
+  teacher:    '/dashboard',
+};
 
-export function useAuth(): UseAuthReturn {
+export function useAuth() {
   const navigate = useNavigate();
   const [user, setUser] = useState<AuthUser | null>(() => authService.getCurrentUser());
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const login = useCallback(async (email: string, password: string) => {
+  const login = useCallback(async (tenDangNhap: string, matKhau: string) => {
     setIsLoading(true);
     setError(null);
     try {
-      const authUser = await authService.login(email, password);
+      const authUser = await authService.login(tenDangNhap, matKhau);
       setUser(authUser);
-      navigate('/dashboard');
+      navigate(ROLE_REDIRECT[authUser.role] ?? '/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Đăng nhập thất bại');
     } finally {
@@ -38,12 +36,5 @@ export function useAuth(): UseAuthReturn {
     navigate('/login');
   }, [navigate]);
 
-  return {
-    user,
-    isAuthenticated: !!user,
-    isLoading,
-    error,
-    login,
-    logout,
-  };
+  return { user, isAuthenticated: !!user, isLoading, error, login, logout };
 }
