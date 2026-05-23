@@ -7,6 +7,7 @@ import { storage } from '../utils/storage';
 // ── Pages ──────────────────────────────────────────────────────────
 import DashboardPage                from '../pages/Dashboard/DashboardPage';
 import DeviceByCategoryPage         from '../pages/DeviceManagement/DeviceByCategoryPage';
+import AssetDetailPage              from '../pages/DeviceManagement/AssetDetailPage';
 import RoomListPage                 from '../pages/RoomManagement/RoomListPage';
 import RepairRoomPage               from '../pages/RoomManagement/RepairRoomPage';
 import DeviceRequestPage            from '../pages/RoomManagement/DeviceRequestPage';
@@ -38,9 +39,9 @@ export const adminRouteElements = (
   <>
     <Route path="/dashboard"             element={<DashboardPage />} />
 
-    {/* Thiết bị — xem tất cả hoặc lọc theo loại */}
+    {/* Thiết bị */}
     <Route path="/assets"                element={<DeviceByCategoryPage />} />
-    <Route path="/assets/:id"            element={<DeviceByCategoryPage />} />
+    <Route path="/assets/:id"            element={<AssetDetailPage />} />
 
     {/* Phòng & Khoa */}
     <Route path="/departments"           element={<RoomListPage />} />

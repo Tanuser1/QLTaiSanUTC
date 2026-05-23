@@ -88,7 +88,10 @@ export const Sidebar: React.FC = () => {
     icon: Monitor,
     children: [
       { label: 'Tất cả', to: '/assets' },
-      ...categories.map(cat => ({ label: cat.name, to: `/assets/${cat.id}` })),
+      ...categories.map(cat => ({
+        label: cat.name,
+        to:    `/assets?loai=${cat.id}&catName=${encodeURIComponent(cat.name)}`,
+      })),
     ],
   };
 
@@ -112,7 +115,11 @@ export const Sidebar: React.FC = () => {
   const isChildActive = (child: NavLeaf): boolean => {
     if (!child.to) return false;
     const [childPath, childQuery] = child.to.split('?');
-    if (childQuery) return pathname === childPath && window.location.search.replace('?', '') === childQuery;
+    if (childQuery) {
+      const childParams   = new URLSearchParams(childQuery);
+      const currentParams = new URLSearchParams(window.location.search);
+      return pathname === childPath && childParams.get('loai') === currentParams.get('loai');
+    }
     return pathname === childPath || pathname.startsWith(childPath + '/');
   };
 

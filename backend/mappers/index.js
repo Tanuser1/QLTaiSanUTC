@@ -164,7 +164,12 @@ function mapAsset(row) {
         userId:          row.MaNguoiSuDung   ?? null,
         invoiceId:       row.MaHoaDon        ?? null,
         price:           row.Gia,
-        specs:           row.ThongSoKyThuat  ?? null,
+        specs:           (() => {
+            const raw = row.ThongSoKyThuat;
+            if (!raw) return null;
+            if (typeof raw === 'object') return raw;
+            try { return JSON.parse(raw); } catch { return { 'Thông số': raw }; }
+        })(),
         image:           row.HinhAnh         ?? null,
         qrCode:          row.QRCode          ?? null,
         warrantyMonths:  row.ThoiGianBaoHanh ?? null,
@@ -185,9 +190,15 @@ function mapAsset(row) {
         assignedEmail:   row.EmailNguoiSuDung?? null,
         supplierName:    row.TenNCC          ?? null,
         supplierPhone:   row.SDTNhaCungCap   ?? null,
+        // joined — room department
+        departmentId:    row.MaKhoa     ?? null,
+        departmentName:  row.TenKhoa    ?? null,
         // nested
         components: Array.isArray(row.LinhKien)
             ? row.LinhKien.map(mapComponentLink)
+            : undefined,
+        repairHistory: Array.isArray(row.LichSuSuaChua)
+            ? row.LichSuSuaChua.map(mapRepairHistory)
             : undefined,
     };
 }
@@ -211,6 +222,33 @@ function mapComponentLink(row) {
         status:       ASSET_STATUS[row.TrangThai] ?? row.TrangThai ?? null,
         categoryName: row.TenLoai     ?? row.TenLoaiCon ?? null,
         categoryGroup:row.NhomLoai    ?? row.NhomLoaiCon ?? null,
+    };
+}
+
+/**
+ * LichSuSuaChua → repairHistory
+ */
+const REPAIR_RESULT_LABEL = {
+    1: 'Đã sửa xong',
+    2: 'Không sửa được',
+    3: 'Cần thay thế',
+};
+
+function mapRepairHistory(row) {
+    if (!row) return null;
+    return {
+        id:             row.MaSuaChua,
+        assetId:        row.MaTaiSan,
+        requestId:      row.MaYeuCau    ?? null,
+        reportId:       row.MaBienBan   ?? null,
+        date:           row.NgaySua,
+        cost:           row.ChiPhi,
+        description:    row.MoTa        ?? null,
+        result:         row.KetQua,
+        resultLabel:    REPAIR_RESULT_LABEL[row.KetQua] ?? null,
+        technicianId:   row.NguoiSuaChua ?? null,
+        technicianName: row.TenKTV      ?? null,
+        createdAt:      row.NgayTao,
     };
 }
 
@@ -371,6 +409,7 @@ module.exports = {
     mapSupplier,
     mapRoom,
     mapAsset,
+    mapRepairHistory,
     mapComponentLink,
     mapSupportRequest,
     mapRepairReport,

@@ -21,10 +21,10 @@ async function sinhMaQuanLy(maLoai) {
     let maQuanLy;
     do {
         maQuanLy = `${prefix}-${String(attempt).padStart(5, '0')}`;
-        const [[{ exists }]] = await db.query(
-            `SELECT COUNT(*) AS exists FROM TaiSan WHERE MaQuanLy = ?`, [maQuanLy]
+        const [[{ cnt }]] = await db.query(
+            `SELECT COUNT(*) AS cnt FROM TaiSan WHERE MaQuanLy = ?`, [maQuanLy]
         );
-        if (exists === 0) break;
+        if (cnt === 0) break;
         attempt++;
     } while (true);
 
@@ -97,13 +97,15 @@ router.get('/:id', async (req, res) => {
             `SELECT ts.*,
                     lt.TenLoai, lt.NhomLoai, lt.KyHieu,
                     p.TenPhong, p.TenToaNha, p.Tang, p.LoaiPhong,
+                    k.MaKhoa, k.TenKhoa,
                     nd.HoTen  AS NguoiSuDung, nd.Email AS EmailNguoiSuDung,
                     ncc.TenNCC, ncc.SoDienThoai AS SDTNhaCungCap
              FROM TaiSan ts
-             LEFT JOIN LoaiTaiSan lt  ON lt.MaLoai      = ts.MaLoai
-             LEFT JOIN Phong p        ON p.MaPhong        = ts.MaPhong
-             LEFT JOIN NguoiDung nd   ON nd.MaNguoiDung   = ts.MaNguoiSuDung
-             LEFT JOIN NhaCungCap ncc ON ncc.MaNCC         = ts.MaNCC
+             LEFT JOIN LoaiTaiSan lt  ON lt.MaLoai        = ts.MaLoai
+             LEFT JOIN Phong p        ON p.MaPhong         = ts.MaPhong
+             LEFT JOIN Khoa k         ON k.MaKhoa          = p.MaKhoa
+             LEFT JOIN NguoiDung nd   ON nd.MaNguoiDung    = ts.MaNguoiSuDung
+             LEFT JOIN NhaCungCap ncc ON ncc.MaNCC          = ts.MaNCC
              WHERE ts.MaTaiSan = ? AND ts.IsDeleted = 0`,
             [id]
         );
@@ -121,7 +123,16 @@ router.get('/:id', async (req, res) => {
             [id]
         );
 
-        res.json({ success: true, data: mapAsset({ ...ts, LinhKien: linhKien }) });
+        const [lichSuSuaChua] = await db.query(
+            `SELECT lsc.*, nd.HoTen AS TenKTV
+             FROM LichSuSuaChua lsc
+             LEFT JOIN NguoiDung nd ON nd.MaNguoiDung = lsc.NguoiSuaChua
+             WHERE lsc.MaTaiSan = ?
+             ORDER BY lsc.NgaySua DESC`,
+            [id]
+        );
+
+        res.json({ success: true, data: mapAsset({ ...ts, LinhKien: linhKien, LichSuSuaChua: lichSuSuaChua }) });
     } catch (error) {
         console.error('[TAISAN GET ONE]', error);
         res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
@@ -135,7 +146,8 @@ router.get('/:id', async (req, res) => {
 router.post('/', adminOnly, async (req, res) => {
     try {
         const {
-            TenTaiSan, MaLoai, MaNCC, Gia = 0,
+            TenTaiSan, MaLoai, MaNCC, Gia = 0, MaPhong,
+            TrangThai = 1,
             ThongSoKyThuat, ThoiGianBaoHanh, NgayNhap, NamSanXuat, MaHoaDon
         } = req.body;
 
@@ -152,16 +164,17 @@ router.post('/', adminOnly, async (req, res) => {
 
         const [result] = await db.query(
             `INSERT INTO TaiSan
-             (MaQuanLy, TenTaiSan, MaLoai, MaNCC, Gia, ThongSoKyThuat, ThoiGianBaoHanh, NgayNhap, NamSanXuat, MaHoaDon, TrangThai)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+             (MaQuanLy, TenTaiSan, MaLoai, MaNCC, MaPhong, Gia, ThongSoKyThuat, ThoiGianBaoHanh, NgayNhap, NamSanXuat, MaHoaDon, TrangThai)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 MaQuanLy, TenTaiSan, MaLoai,
-                MaNCC || null, Gia,
+                MaNCC || null, MaPhong || null, Gia,
                 ThongSoKyThuat ? JSON.stringify(ThongSoKyThuat) : null,
                 ThoiGianBaoHanh || null,
                 NgayNhap || null,
                 NamSanXuat || null,
                 MaHoaDon || null,
+                TrangThai,
             ]
         );
 

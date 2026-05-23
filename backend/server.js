@@ -35,6 +35,8 @@ const taiSanRoutes      = require('./routes/taisan');
 const loaiTaiSanRoutes  = require('./routes/loaitaisan');
 const linhKienRoutes    = require('./routes/linhkien');
 const adminRoutes       = require('./routes/admin'); // Dashboard
+const nhaCungCapRoutes  = require('./routes/nhacc');
+const khoaRoutes        = require('./routes/khoa');
 
 // ---- Auth ----
 app.use('/api/auth', authRoutes);
@@ -53,6 +55,12 @@ app.use('/api/loai-taisan', loaiTaiSanRoutes);
 
 // ---- Dashboard Admin ----
 app.use('/api/admin', adminRoutes);
+
+// ---- Nhà Cung Cấp ----
+app.use('/api/nhacc', nhaCungCapRoutes);
+
+// ---- Khoa / Đơn vị ----
+app.use('/api/khoa', khoaRoutes);
 
 // ============================================================
 // Health check

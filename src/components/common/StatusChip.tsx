@@ -9,11 +9,11 @@ interface StatusChipProps {
 }
 
 const statusConfig: Record<StatusType, { label: string; bg: string; text: string; dot: string }> = {
-  active:      { label: 'Hoạt động',  bg: 'rgba(38, 166, 154, 0.1)',   text: '#26a69a', dot: '#26a69a' },
-  maintenance: { label: 'Bảo trì',    bg: 'rgba(239, 83, 80, 0.1)',    text: '#ef5350', dot: '#ef5350' },
-  pending:     { label: 'Chờ duyệt',  bg: 'rgba(255, 202, 40, 0.2)',   text: '#e6a817', dot: '#ffca28' },
-  inactive:    { label: 'Ngừng dùng', bg: 'rgba(116, 119, 125, 0.1)',  text: '#74777d', dot: '#74777d' },
-  ready:       { label: 'SẴN DÙNG',   bg: '#e0f2f1',                   text: '#00796b', dot: '#00796b' },
+  active:      { label: 'Đang sử dụng',    bg: 'rgba(38, 166, 154, 0.1)',   text: '#26a69a', dot: '#26a69a' },
+  maintenance: { label: 'Hỏng / Đang sửa', bg: 'rgba(239, 83, 80, 0.1)',    text: '#ef5350', dot: '#ef5350' },
+  pending:     { label: 'Chờ thanh lý',    bg: 'rgba(255, 202, 40, 0.2)',   text: '#e6a817', dot: '#ffca28' },
+  inactive:    { label: 'Đã thanh lý',     bg: 'rgba(116, 119, 125, 0.1)',  text: '#74777d', dot: '#74777d' },
+  ready:       { label: 'Trong kho',        bg: '#e0f2f1',                   text: '#00796b', dot: '#00796b' },
 };
 
 export const StatusChip: React.FC<StatusChipProps> = ({ status, label, className = '' }) => {
