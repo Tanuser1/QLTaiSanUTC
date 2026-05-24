@@ -158,6 +158,7 @@ function mapAsset(row) {
         id:              row.MaTaiSan,
         code:            row.MaQuanLy,
         name:            row.TenTaiSan,
+        quantity:        row.SoLuong        ?? 1,
         categoryId:      row.MaLoai         ?? null,
         supplierId:      row.MaNCC           ?? null,
         roomId:          row.MaPhong         ?? null,

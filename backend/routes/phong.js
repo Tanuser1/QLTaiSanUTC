@@ -12,15 +12,16 @@ router.use(authMiddleware);
  */
 router.get('/', async (req, res) => {
     try {
-        const { LoaiPhong, TenToaNha, MaKhoa, page = 1, limit = 50 } = req.query;
+        const { LoaiPhong, TenToaNha, MaKhoa, keyword, page = 1, limit = 50 } = req.query;
         const offset = (parseInt(page) - 1) * parseInt(limit);
 
         let where = 'WHERE p.IsDeleted = 0';
         const params = [];
 
-        if (LoaiPhong) { where += ' AND p.LoaiPhong = ?';      params.push(LoaiPhong); }
-        if (TenToaNha) { where += ' AND p.TenToaNha LIKE ?';   params.push(`%${TenToaNha}%`); }
-        if (MaKhoa)    { where += ' AND p.MaKhoa = ?';         params.push(MaKhoa); }
+        if (LoaiPhong) { where += ' AND p.LoaiPhong = ?';                         params.push(LoaiPhong); }
+        if (TenToaNha) { where += ' AND p.TenToaNha LIKE ?';                      params.push(`%${TenToaNha}%`); }
+        if (MaKhoa)    { where += ' AND p.MaKhoa = ?';                            params.push(MaKhoa); }
+        if (keyword)   { where += ' AND (p.TenPhong LIKE ? OR p.TenToaNha LIKE ?)'; params.push(`%${keyword}%`, `%${keyword}%`); }
 
         const [rows] = await db.query(
             `SELECT p.*, k.TenKhoa,

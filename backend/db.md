@@ -677,18 +677,18 @@ INSERT INTO ThongBao (LoaiSuKien,MaDoiTuong,NguoiNhan,NoiDung) VALUES
 -- VIEWS
 -- ============================================================
  
--- Dashboard tổng quan
+-- Dashboard tổng quan (dùng SUM(SoLuong) để nội thất SoLuong=N đếm đúng)
 CREATE OR REPLACE VIEW v_Dashboard AS
 SELECT
-    (SELECT COUNT(*) FROM TaiSan WHERE IsDeleted=0)                          AS TongThietBi,
-    (SELECT COUNT(*) FROM TaiSan WHERE TrangThai=1 AND IsDeleted=0)          AS DangHoatDong,
-    (SELECT COUNT(*) FROM TaiSan WHERE TrangThai=3 AND IsDeleted=0)          AS DangHong,
-    (SELECT COUNT(*) FROM TaiSan WHERE TrangThai=4 AND IsDeleted=0)          AS DangSuaChua,
-    (SELECT COUNT(*) FROM TaiSan WHERE TrangThai=5 AND IsDeleted=0)          AS ChoThanhLy,
-    (SELECT COUNT(*) FROM YeuCauHoTro WHERE TrangThai=1)                     AS YeuCauMoi,
-    (SELECT COUNT(*) FROM YeuCauHoTro WHERE TrangThai IN(2,3))               AS YeuCauDangXuLy,
-    (SELECT COUNT(*) FROM BienBanSuaChua WHERE TrangThai=1)                  AS BienBanChoDuyet,
-    (SELECT COUNT(*) FROM ThanhLy WHERE TrangThai=1)                         AS ChoThanhLyKho;
+    (SELECT COALESCE(SUM(SoLuong),0) FROM TaiSan WHERE IsDeleted=0)                         AS TongThietBi,
+    (SELECT COALESCE(SUM(SoLuong),0) FROM TaiSan WHERE TrangThai=1 AND IsDeleted=0)         AS DangHoatDong,
+    (SELECT COALESCE(SUM(SoLuong),0) FROM TaiSan WHERE TrangThai=3 AND IsDeleted=0)         AS DangHong,
+    (SELECT COALESCE(SUM(SoLuong),0) FROM TaiSan WHERE TrangThai=4 AND IsDeleted=0)         AS DangSuaChua,
+    (SELECT COALESCE(SUM(SoLuong),0) FROM TaiSan WHERE TrangThai=5 AND IsDeleted=0)         AS ChoThanhLy,
+    (SELECT COUNT(*) FROM YeuCauHoTro WHERE TrangThai=1)                                     AS YeuCauMoi,
+    (SELECT COUNT(*) FROM YeuCauHoTro WHERE TrangThai IN(2,3))                               AS YeuCauDangXuLy,
+    (SELECT COUNT(*) FROM BienBanSuaChua WHERE TrangThai=1)                                  AS BienBanChoDuyet,
+    (SELECT COUNT(*) FROM ThanhLy WHERE TrangThai=1)                                         AS ChoThanhLyKho;
  
 -- Danh sách tài sản đầy đủ
 CREATE OR REPLACE VIEW v_DanhSachTaiSan AS
@@ -751,18 +751,18 @@ JOIN  TaiSan ts        ON ts.MaPhong = p.MaPhong AND ts.IsDeleted=0
 JOIN  LoaiTaiSan lt    ON ts.MaLoai  = lt.MaLoai
 WHERE p.IsDeleted = 0;
  
--- Thống kê theo loại tài sản
+-- Thống kê theo loại tài sản (dùng SUM(SoLuong) để nội thất đếm đúng số lượng thực)
 CREATE OR REPLACE VIEW v_ThongKeLoai AS
 SELECT
     lt.MaLoai,
     lt.TenLoai,
     lt.KyHieu,
     lt.NhomLoai,
-    COUNT(ts.MaTaiSan)      AS TongSo,
-    SUM(ts.TrangThai=1)     AS DangDung,
-    SUM(ts.TrangThai=3)     AS Hong,
-    SUM(ts.TrangThai=4)     AS DangSua,
-    SUM(ts.TrangThai=5)     AS ChoThanhLy
+    COALESCE(SUM(ts.SoLuong), 0)                                        AS TongSo,
+    SUM(CASE WHEN ts.TrangThai=1 THEN ts.SoLuong ELSE 0 END)           AS DangDung,
+    SUM(CASE WHEN ts.TrangThai=3 THEN ts.SoLuong ELSE 0 END)           AS Hong,
+    SUM(CASE WHEN ts.TrangThai=4 THEN ts.SoLuong ELSE 0 END)           AS DangSua,
+    SUM(CASE WHEN ts.TrangThai=5 THEN ts.SoLuong ELSE 0 END)           AS ChoThanhLy
 FROM LoaiTaiSan lt
 LEFT JOIN TaiSan ts ON ts.MaLoai=lt.MaLoai AND ts.IsDeleted=0
 WHERE lt.IsDeleted=0 AND lt.MaLoaiCha IS NULL
@@ -798,3 +798,23 @@ SELECT
     SUM(TrangThai=5) AS ChoThanhLy,
     SUM(TrangThai=0) AS DaThanhLy
 FROM TaiSan WHERE IsDeleted=0;
+
+ALTER TABLE TaiSan ADD COLUMN SoLuong INT NOT NULL DEFAULT 1;
+
+-- Thiết bị điện tử: SoLuong = 1 (luôn luôn)
+-- Bàn ghế:         SoLuong = 30 (nhập 30 bộ 1 lần)
+
+INSERT INTO TaiSan (MaQuanLy, TenTaiSan, MaLoai, MaNCC, MaPhong, 
+  Gia, SoLuong, ThongSoKyThuat, NgayNhap, TrangThai) VALUES
+('BAN-00401','Bàn học sinh P401',12,8,8,800000,30,
+ '{"KichThuoc":"60x40cm","ChatLieu":"Go cong nghiep"}',
+ '2020-01-01',1),
+('GHE-00401','Ghế học sinh P401',13,8,8,500000,30,
+ '{"Loai":"Co dinh","ChatLieu":"Sat son tinh dien"}',
+ '2020-01-01',1),
+('BAN-00402','Bàn học sinh P402',12,8,9,800000,30,
+ '{"KichThuoc":"60x40cm","ChatLieu":"Go cong nghiep"}',
+ '2020-01-01',1),
+('GHE-00402','Ghế học sinh P402',13,8,9,500000,30,
+ '{"Loai":"Co dinh","ChatLieu":"Sat son tinh dien"}',
+ '2020-01-01',1);

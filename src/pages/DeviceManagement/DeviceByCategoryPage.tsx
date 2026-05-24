@@ -25,6 +25,7 @@ function mapToTableRow(a: ApiAsset): TableRowData {
     assetCode:  a.code,
     assetName:  a.name,
     category:   a.categoryName  ?? '—',
+    quantity:   a.quantity ?? 1,
     value:      a.price != null
                   ? a.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
                   : '—',

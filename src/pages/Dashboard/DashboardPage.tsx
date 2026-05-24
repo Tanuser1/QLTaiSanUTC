@@ -63,6 +63,19 @@ const PRIORITY_STYLE: Record<string, string> = {
   'Thường':         'bg-gray-100 text-gray-500',
 };
 
+const GROUP_LABELS: Record<string, string> = {
+  'ThietBiDienTu':  'Thiết bị điện tử',
+  'MayTinh':        'Máy tính',
+  'NgoaiViMayTinh': 'Ngoại vi & Linh kiện',
+  'InAnQuet':       'In ấn & Scan',
+  'MangVienThong':  'Mạng & Viễn thông',
+  'DieuHoaQuat':    'Điều hòa & Quạt',
+  'ChieuSang':      'Chiếu sáng',
+  'NoiThat':        'Bàn ghế & Nội thất',
+  'ThietBiChuyen':  'Thiết bị chuyên ngành',
+  'Khac':           'Khác'
+};
+
 const CHART_COLORS = ['#0A84FF', '#34C759', '#FF9500', '#FF3B30', '#5856D6', '#FF2D55', '#30B0C7'];
 
 /* ─────────────────────────────────────────────────────────────
@@ -189,7 +202,7 @@ const DonutChart: React.FC<{ data: Array<{ group: string; count: number }> }> = 
         {segments.map(s => (
           <div key={s.group} className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: s.color }} />
-            <span className="text-xs text-[#3C3C43] flex-1 truncate">{s.group}</span>
+            <span className="text-xs text-[#3C3C43] flex-1 truncate">{GROUP_LABELS[s.group] || s.group}</span>
             <span className="text-xs font-semibold text-[#1C1C1E] flex-shrink-0">{s.pct.toFixed(0)}%</span>
           </div>
         ))}

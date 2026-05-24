@@ -14,6 +14,7 @@ export interface TableRowData {
   assetCode: string;
   assetName: string;
   category: string;
+  quantity?: number;
   value: string;
   assignedTo: string;
   specs: string;
@@ -56,6 +57,11 @@ const DataTableRow: React.FC<{
     <td className="px-3 py-2.5 text-sm font-medium text-[#002957] tabular-nums whitespace-nowrap">{row.assetCode}</td>
     <td className="px-3 py-2.5 text-sm text-[#191c1d] max-w-[200px] truncate">{row.assetName}</td>
     <td className="px-3 py-2.5 text-sm text-[#44474c] whitespace-nowrap">{row.category}</td>
+    <td className="px-3 py-2.5 text-sm text-center whitespace-nowrap">
+      <span className="font-semibold text-[#191c1d]">
+        {row.quantity ?? 1}
+      </span>
+    </td>
     <td className="px-3 py-2.5 text-sm font-medium text-[#191c1d] tabular-nums whitespace-nowrap">{row.value}</td>
     <td className="px-3 py-2.5 text-sm text-[#44474c] whitespace-nowrap">{row.assignedTo}</td>
     <td className="px-3 py-2.5 text-sm text-[#44474c] max-w-[150px] truncate">{row.specs}</td>
@@ -93,6 +99,7 @@ const COLUMNS = [
   { key: 'assetCode',  label: 'Mã',            sortable: true  },
   { key: 'assetName',  label: 'Tên thiết bị',  sortable: true  },
   { key: 'category',   label: 'Loại',          sortable: true  },
+  { key: 'quantity',   label: 'Số lượng',      sortable: false },
   { key: 'value',      label: 'Giá',           sortable: true  },
   { key: 'assignedTo', label: 'Người dùng',    sortable: true  },
   { key: 'specs',      label: 'Cấu hình',      sortable: false },
@@ -357,14 +364,14 @@ export const DataTable: React.FC<DataTableProps> = ({
             {isLoading ? (
               Array.from({ length: 6 }).map((_, i) => (
                 <tr key={i} className="border-b border-[#e1e3e4] animate-pulse">
-                  {Array.from({ length: 12 }).map((__, j) => (
+                  {Array.from({ length: 13 }).map((__, j) => (
                     <td key={j} className="px-3 py-3"><div className="h-3 bg-[#e1e3e4] rounded" /></td>
                   ))}
                 </tr>
               ))
             ) : pageData.length === 0 ? (
               <tr>
-                <td colSpan={12} className="px-5 py-12 text-center text-sm text-[#74777d]">
+                <td colSpan={13} className="px-5 py-12 text-center text-sm text-[#74777d]">
                   Không tìm thấy tài sản nào
                 </td>
               </tr>

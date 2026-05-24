@@ -56,7 +56,7 @@ router.get('/', async (req, res) => {
 
         const [rows] = await db.query(
             `SELECT ts.MaTaiSan, ts.MaQuanLy, ts.TenTaiSan, ts.TrangThai,
-                    ts.Gia, ts.NgayNhap, ts.HinhAnh, ts.QRCode, ts.NamSanXuat,
+                    ts.Gia, ts.SoLuong, ts.NgayNhap, ts.HinhAnh, ts.QRCode, ts.NamSanXuat,
                     lt.TenLoai, lt.NhomLoai, lt.KyHieu,
                     p.TenPhong, p.TenToaNha,
                     nd.HoTen  AS NguoiSuDung,
@@ -147,7 +147,7 @@ router.post('/', adminOnly, async (req, res) => {
     try {
         const {
             TenTaiSan, MaLoai, MaNCC, Gia = 0, MaPhong,
-            TrangThai = 1,
+            TrangThai = 1, SoLuong = 1,
             ThongSoKyThuat, ThoiGianBaoHanh, NgayNhap, NamSanXuat, MaHoaDon
         } = req.body;
 
@@ -164,11 +164,12 @@ router.post('/', adminOnly, async (req, res) => {
 
         const [result] = await db.query(
             `INSERT INTO TaiSan
-             (MaQuanLy, TenTaiSan, MaLoai, MaNCC, MaPhong, Gia, ThongSoKyThuat, ThoiGianBaoHanh, NgayNhap, NamSanXuat, MaHoaDon, TrangThai)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             (MaQuanLy, TenTaiSan, MaLoai, MaNCC, MaPhong, Gia, SoLuong, ThongSoKyThuat, ThoiGianBaoHanh, NgayNhap, NamSanXuat, MaHoaDon, TrangThai)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 MaQuanLy, TenTaiSan, MaLoai,
                 MaNCC || null, MaPhong || null, Gia,
+                Math.max(1, parseInt(SoLuong) || 1),
                 ThongSoKyThuat ? JSON.stringify(ThongSoKyThuat) : null,
                 ThoiGianBaoHanh || null,
                 NgayNhap || null,

@@ -32,6 +32,10 @@ const SPEC_TEMPLATES: Record<string, SpecField[]> = {
     { key: 'Port',      label: 'Số cổng',    placeholder: 'VD: 8 cổng RJ45' },
     { key: 'KetNoi',   label: 'Kết nối',    placeholder: 'VD: WPA3, LAN' },
   ],
+  NoiThat: [
+    { key: 'KichThuoc', label: 'Kích thước', placeholder: 'VD: 60×40cm' },
+    { key: 'ChatLieu',  label: 'Chất liệu',  placeholder: 'VD: Gỗ công nghiệp' },
+  ],
 };
 
 const STATUS_OPTIONS = [
@@ -88,6 +92,7 @@ const AddDeviceModal: React.FC<AddDeviceModalProps> = ({ defaultCategoryId, onCl
 
   const [form, setForm]       = useState<AddForm>({ ...EMPTY, MaLoai: defaultCategoryId ? String(defaultCategoryId) : '' });
   const [specs, setSpecs]     = useState<Record<string, string>>({});
+  const [soLuong, setSoLuong] = useState(1);
   const [depts, setDepts]     = useState<Dept[]>([]);
   const [rooms, setRooms]     = useState<Room[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -112,11 +117,12 @@ const AddDeviceModal: React.FC<AddDeviceModalProps> = ({ defaultCategoryId, onCl
       .catch(() => setRooms([]));
   }, [form.MaKhoa]);
 
-  /* Reset spec values when category changes */
+  /* Reset spec values and soLuong when category changes */
   useEffect(() => {
     const cat = flatCats.find(c => String(c.id) === form.MaLoai);
     const fields = cat ? (SPEC_TEMPLATES[cat.group] ?? []) : [];
     setSpecs(Object.fromEntries(fields.map(f => [f.key, ''])));
+    if (cat?.group !== 'NoiThat') setSoLuong(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.MaLoai]);
 
@@ -128,8 +134,9 @@ const AddDeviceModal: React.FC<AddDeviceModalProps> = ({ defaultCategoryId, onCl
     });
   };
 
-  const selectedCat  = flatCats.find(c => String(c.id) === form.MaLoai);
-  const specFields   = selectedCat ? (SPEC_TEMPLATES[selectedCat.group] ?? []) : [];
+  const selectedCat    = flatCats.find(c => String(c.id) === form.MaLoai);
+  const specFields     = selectedCat ? (SPEC_TEMPLATES[selectedCat.group] ?? []) : [];
+  const isNoiThat      = selectedCat?.group === 'NoiThat';
 
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -147,6 +154,7 @@ const AddDeviceModal: React.FC<AddDeviceModalProps> = ({ defaultCategoryId, onCl
         TenTaiSan:       form.TenTaiSan.trim(),
         MaLoai:          Number(form.MaLoai),
         TrangThai:       Number(form.TrangThai),
+        SoLuong:         selectedCat?.group === 'NoiThat' ? soLuong : 1,
         MaPhong:         form.MaPhong         ? Number(form.MaPhong)         : undefined,
         MaNCC:           form.MaNCC           ? Number(form.MaNCC)           : undefined,
         Gia:             form.Gia             ? Number(form.Gia)             : 0,
@@ -253,17 +261,24 @@ const AddDeviceModal: React.FC<AddDeviceModalProps> = ({ defaultCategoryId, onCl
               </div>
             </div>
 
-            {/* Info box */}
-            <div
-              className="flex items-start gap-2 px-3 py-2.5 rounded-lg text-xs text-[#44474c]"
-              style={{ backgroundColor: 'rgba(38,166,154,0.06)', border: '1px solid rgba(38,166,154,0.18)' }}
-            >
-              <span className="text-[#26a69a] font-bold leading-tight">ℹ</span>
-              <span>
-                Mã quản lý sẽ tự sinh sau khi lưu.{' '}
-                Ví dụ: <strong className="text-[#191c1d]">MMT-00005</strong>
-              </span>
-            </div>
+            {/* Số lượng — chỉ hiện khi là nội thất */}
+            {isNoiThat && (
+              <div className="mb-3">
+                <label className={labelCls}>
+                  Số lượng <span className="text-[#ba1a1a]">*</span>
+                  <span className="font-normal text-[#74777d] ml-1">(bộ / cái)</span>
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  value={soLuong}
+                  onChange={e => setSoLuong(Math.max(1, parseInt(e.target.value) || 1))}
+                  className={inputCls + ' w-40'}
+                />
+              </div>
+            )}
+
+
           </section>
 
           {/* Section 2 — Vị trí */}

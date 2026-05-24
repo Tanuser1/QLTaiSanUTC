@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
-      "Bash(Get-ChildItem -Path \"d:\\\\QLTaiSanUTC\\\\src\\\\types\" -Filter \"*.ts\")",
-      "Bash(Select-Object -ExpandProperty FullName)"
-    ]
-  }
-}

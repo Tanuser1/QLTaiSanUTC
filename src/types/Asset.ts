@@ -30,6 +30,7 @@ export interface ApiAsset {
   id:              number;
   code:            string;
   name:            string;
+  quantity:        number;
   categoryId:      number | null;
   categoryName:    string | null;
   categoryGroup:   string | null;

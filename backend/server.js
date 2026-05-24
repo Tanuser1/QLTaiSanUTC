@@ -37,6 +37,7 @@ const linhKienRoutes    = require('./routes/linhkien');
 const adminRoutes       = require('./routes/admin'); // Dashboard
 const nhaCungCapRoutes  = require('./routes/nhacc');
 const khoaRoutes        = require('./routes/khoa');
+const userRoutes        = require('./routes/users');
 
 // ---- Auth ----
 app.use('/api/auth', authRoutes);
@@ -61,6 +62,9 @@ app.use('/api/nhacc', nhaCungCapRoutes);
 
 // ---- Khoa / Đơn vị ----
 app.use('/api/khoa', khoaRoutes);
+
+// ---- Người dùng ----
+app.use('/api/users', userRoutes);
 
 // ============================================================
 // Health check
