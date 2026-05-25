@@ -282,13 +282,15 @@ function RoomDetailView({ roomId, onBack, onEdit }: RoomDetailProps) {
 
   const assets = room.assets ?? [];
 
-  /* Quick stats */
+  /* Quick stats — cộng theo quantity */
   const stats = {
-    active:      assets.filter(a => a.status === 'active' || a.status === 'borrowed').length,
-    broken:      assets.filter(a => a.status === 'broken').length,
-    underRepair: assets.filter(a => a.status === 'underRepair').length,
-    pending:     assets.filter(a => a.status === 'pendingLiquidation').length,
+    active:      assets.filter(a => a.status === 'active' || a.status === 'borrowed').reduce((s, a) => s + (a.quantity ?? 1), 0),
+    broken:      assets.filter(a => a.status === 'broken').reduce((s, a) => s + (a.quantity ?? 1), 0),
+    underRepair: assets.filter(a => a.status === 'underRepair').reduce((s, a) => s + (a.quantity ?? 1), 0),
+    pending:     assets.filter(a => a.status === 'pendingLiquidation').reduce((s, a) => s + (a.quantity ?? 1), 0),
   };
+
+  const totalQty = assets.reduce((s, a) => s + (a.quantity ?? 1), 0);
 
   const loaiBadge = LOAI_BADGE[room.type] ?? { label: room.type, bg: '#f1f5f9', color: '#64748b' };
 
@@ -338,7 +340,7 @@ function RoomDetailView({ roomId, onBack, onEdit }: RoomDetailProps) {
                 >
                   {loaiBadge.label}
                 </span>
-                <span className="font-semibold text-[#26a69a]">{assets.length} thiết bị</span>
+                <span className="font-semibold text-[#26a69a]">{totalQty} thiết bị</span>
               </div>
               {room.address && (
                 <p className="mt-1 text-xs text-[#74777d]">{room.address}</p>
@@ -366,7 +368,7 @@ function RoomDetailView({ roomId, onBack, onEdit }: RoomDetailProps) {
         <div className="px-5 py-4 border-b border-[#f3f4f5] flex items-center gap-2">
           <Package size={15} className="text-[#26a69a]" />
           <span className="font-semibold text-sm text-[#191c1d]">Danh sách thiết bị trong phòng</span>
-          <span className="ml-auto text-xs text-[#74777d]">{assets.length} thiết bị</span>
+          <span className="ml-auto text-xs text-[#74777d]">{totalQty} thiết bị</span>
         </div>
         {assets.length === 0 ? (
           <div className="py-12 text-center text-sm text-[#74777d]">Phòng chưa có thiết bị nào</div>
@@ -379,7 +381,7 @@ function RoomDetailView({ roomId, onBack, onEdit }: RoomDetailProps) {
                   <th className="px-4 py-3 text-left">Tên thiết bị</th>
                   <th className="px-4 py-3 text-left">Loại</th>
                   <th className="px-4 py-3 text-center">Trạng thái</th>
-                  <th className="px-4 py-3 text-left">Người dùng</th>
+                  <th className="px-4 py-3 text-center">Số lượng</th>
                 </tr>
               </thead>
               <tbody>
@@ -402,7 +404,7 @@ function RoomDetailView({ roomId, onBack, onEdit }: RoomDetailProps) {
                           {sc.label}
                         </span>
                       </td>
-                      <td className="px-4 py-2.5 text-[#74777d]">{a.assignedTo ?? '—'}</td>
+                      <td className="px-4 py-2.5 text-center font-semibold text-[#191c1d]">{a.quantity ?? 1}</td>
                     </tr>
                   );
                 })}

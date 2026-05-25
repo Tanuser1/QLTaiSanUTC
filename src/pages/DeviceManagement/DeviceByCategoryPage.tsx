@@ -50,6 +50,7 @@ const DeviceByCategoryPage: React.FC = () => {
   const [rows,         setRows]         = useState<TableRowData[]>([]);
   const [isLoading,    setIsLoading]    = useState(false);
   const [total,        setTotal]        = useState(0);
+  const [totalQty,     setTotalQty]     = useState(0);
   const [page,         setPage]         = useState(1);
   const [limit,        setLimit]        = useState(20);
   const [keyword,      setKeyword]      = useState('');
@@ -63,8 +64,8 @@ const DeviceByCategoryPage: React.FC = () => {
     setIsLoading(true);
     taiSanService
       .getAll({ loai: loaiId ?? undefined, page, limit, keyword: keyword || undefined })
-      .then((res) => { setRows(res.items.map(mapToTableRow)); setTotal(res.pagination.total); })
-      .catch(() => { setRows([]); setTotal(0); })
+      .then((res) => { setRows(res.items.map(mapToTableRow)); setTotal(res.pagination.total); setTotalQty(res.totalQuantity ?? 0); })
+      .catch(() => { setRows([]); setTotal(0); setTotalQty(0); })
       .finally(() => setIsLoading(false));
   }, [loaiId, page, limit, keyword]);
 
@@ -104,6 +105,7 @@ const DeviceByCategoryPage: React.FC = () => {
         rows={rows}
         isLoading={isLoading}
         serverTotal={total}
+        serverTotalQuantity={totalQty}
         page={page}
         limit={limit}
         onPageChange={setPage}

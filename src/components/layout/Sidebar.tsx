@@ -20,6 +20,7 @@ import {
   GraduationCap,
 } from 'lucide-react';
 import { useDeviceCategoryContext } from '../../contexts/DeviceCategoryContext';
+import { useAuthContext } from '../../contexts/AuthContext';
 
 /* ─────────────────────────────────────────────────────────────
    NAV TYPES
@@ -47,16 +48,16 @@ const STATIC_NAV: NavGroup[] = [
 
   // [slot 1] 'Thiết bị' sẽ được ghép động từ DeviceCategoryContext
 
-  { label: 'Phòng & Khoa',           icon: DoorOpen,      to: '/departments' },
-  { label: 'Yêu cầu hỗ trợ',        icon: ClipboardList, to: '/requests',   badge: 0 },
-  { label: 'Biên bản sửa chữa',     icon: Wrench,        to: '/maintenance', badge: 0 },
+  { label: 'Phòng & Khoa', icon: DoorOpen, to: '/departments' },
+  { label: 'Yêu cầu hỗ trợ', icon: ClipboardList, to: '/requests', badge: 0 },
+  { label: 'Biên bản sửa chữa', icon: Wrench, to: '/maintenance', badge: 0 },
 
   {
     label: 'Quản lý',
     icon: Settings,
     children: [
-      { label: 'Nhà cung cấp',  icon: Truck, to: '/tasks/suppliers'  },
-      { label: 'Danh mục TB',   icon: Tag,   to: '/tasks/categories' },
+      { label: 'Nhà cung cấp', icon: Truck, to: '/tasks/suppliers' },
+      { label: 'Danh mục TB', icon: Tag, to: '/tasks/categories' },
     ],
   },
 
@@ -64,10 +65,10 @@ const STATIC_NAV: NavGroup[] = [
     label: 'Báo cáo - Thống kê',
     icon: BarChart2,
     children: [
-      { label: 'Thống kê theo Loại',  icon: PieChart,  to: '/reports/by-type'       },
-      { label: 'Thống kê theo Khoa',  icon: BarChart2, to: '/reports/by-department' },
-      { label: 'Lịch sử sửa chữa',   icon: History,   to: '/reports/maintenance'   },
-      { label: 'Thiết bị thanh lý',   icon: Trash2,    to: '/reports/disposal'      },
+      { label: 'Thống kê theo Loại', icon: PieChart, to: '/reports/by-type' },
+      { label: 'Thống kê theo Khoa', icon: BarChart2, to: '/reports/by-department' },
+      { label: 'Lịch sử sửa chữa', icon: History, to: '/reports/maintenance' },
+      { label: 'Thiết bị thanh lý', icon: Trash2, to: '/reports/disposal' },
     ],
   },
 
@@ -79,8 +80,11 @@ const STATIC_NAV: NavGroup[] = [
 ───────────────────────────────────────────────────────────── */
 export const Sidebar: React.FC = () => {
   const { pathname } = useLocation();
-  const navigate     = useNavigate();
+  const navigate = useNavigate();
   const { categories } = useDeviceCategoryContext();
+  const { user } = useAuthContext();
+  const role = user?.role || 'admin';
+  const rolePrefix = role === 'admin' ? '' : `/${role === 'teacher' ? 'giaovien' : role === 'technician' ? 'ktv' : 'bgh'}`;
 
   // Build nav item "Thiết bị" động từ context
   const deviceNavGroup: NavGroup = {
@@ -90,17 +94,42 @@ export const Sidebar: React.FC = () => {
       { label: 'Tất cả', to: '/assets' },
       ...categories.map(cat => ({
         label: cat.name,
-        to:    `/assets?loai=${cat.id}&catName=${encodeURIComponent(cat.name)}`,
+        to: `/assets?loai=${cat.id}&catName=${encodeURIComponent(cat.name)}`,
       })),
     ],
   };
 
-  // Dashboard + Thiết bị (động) + phần còn lại
-  const NAV_ITEMS: NavGroup[] = [STATIC_NAV[0], deviceNavGroup, ...STATIC_NAV.slice(1)];
+  // Tạo NAV_ITEMS tuỳ theo role
+  const getNavItems = (): NavGroup[] => {
+    if (role === 'teacher') {
+      return [
+        { label: 'Dashboard', icon: LayoutDashboard, to: `${rolePrefix}/dashboard` },
+        { label: 'Yêu cầu hỗ trợ', icon: ClipboardList, to: `${rolePrefix}/yeucau` },
+      ];
+    }
+    if (role === 'technician') {
+      return [
+        { label: 'Dashboard', icon: LayoutDashboard, to: `${rolePrefix}/dashboard` },
+        { label: 'Yêu cầu hỗ trợ', icon: ClipboardList, to: `${rolePrefix}/yeucau` },
+        { label: 'Biên bản sửa chữa', icon: Wrench, to: `${rolePrefix}/bienban` },
+      ];
+    }
+    if (role === 'bgh') {
+      return [
+        { label: 'Dashboard', icon: LayoutDashboard, to: `${rolePrefix}/dashboard` },
+        { label: 'Phê duyệt biên bản', icon: Wrench, to: `${rolePrefix}/bienban` },
+        STATIC_NAV.find(n => n.label === 'Báo cáo - Thống kê')!,
+      ];
+    }
+    // admin
+    return [STATIC_NAV[0], deviceNavGroup, ...STATIC_NAV.slice(1)];
+  };
+
+  const NAV_ITEMS = getNavItems();
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    'Thiết bị':           true,
-    'Quản lý':            false,
+    'Thiết bị': false,
+    'Quản lý': false,
     'Báo cáo - Thống kê': false,
   });
 
@@ -116,7 +145,7 @@ export const Sidebar: React.FC = () => {
     if (!child.to) return false;
     const [childPath, childQuery] = child.to.split('?');
     if (childQuery) {
-      const childParams   = new URLSearchParams(childQuery);
+      const childParams = new URLSearchParams(childQuery);
       const currentParams = new URLSearchParams(window.location.search);
       return pathname === childPath && childParams.get('loai') === currentParams.get('loai');
     }
@@ -152,8 +181,8 @@ export const Sidebar: React.FC = () => {
         {NAV_ITEMS.map(item => {
           const Icon = item.icon;
           const hasChildren = !!(item.children?.length);
-          const isOpen      = hasChildren && openGroups[item.label];
-          const topActive   = isTopActive(item);
+          const isOpen = hasChildren && openGroups[item.label];
+          const topActive = isTopActive(item);
 
           return (
             <div key={item.label}>
@@ -198,7 +227,7 @@ export const Sidebar: React.FC = () => {
               {hasChildren && isOpen && (
                 <div className="mx-2 mb-1 rounded-lg overflow-hidden" style={{ backgroundColor: 'rgba(0,0,0,0.15)' }}>
                   {item.children!.map(child => {
-                    const ChildIcon  = child.icon;
+                    const ChildIcon = child.icon;
                     const childActive = isChildActive(child);
 
                     return (

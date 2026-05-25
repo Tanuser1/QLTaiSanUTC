@@ -38,6 +38,9 @@ const adminRoutes       = require('./routes/admin'); // Dashboard
 const nhaCungCapRoutes  = require('./routes/nhacc');
 const khoaRoutes        = require('./routes/khoa');
 const userRoutes        = require('./routes/users');
+const yeucauRoutes      = require('./routes/yeucau');
+const bienbanRoutes     = require('./routes/bienban');
+const thongbaoRoutes    = require('./routes/thongbao');
 
 // ---- Auth ----
 app.use('/api/auth', authRoutes);
@@ -65,6 +68,15 @@ app.use('/api/khoa', khoaRoutes);
 
 // ---- Người dùng ----
 app.use('/api/users', userRoutes);
+
+// ---- Yêu cầu hỗ trợ (all roles) ----
+app.use('/api/yeucau', yeucauRoutes);
+
+// ---- Biên bản sửa chữa (KTV + Admin + BGH) ----
+app.use('/api/bienban', bienbanRoutes);
+
+// ---- Thông báo (all roles) ----
+app.use('/api/thongbao', thongbaoRoutes);
 
 // ============================================================
 // Health check

@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
 
         const [rows] = await db.query(
             `SELECT p.*, k.TenKhoa,
-                    COUNT(ts.MaTaiSan) AS SoLuongTaiSan
+                    COALESCE(SUM(ts.SoLuong), 0) AS SoLuongTaiSan
              FROM Phong p
              LEFT JOIN Khoa k  ON k.MaKhoa = p.MaKhoa
              LEFT JOIN TaiSan ts ON ts.MaPhong = p.MaPhong AND ts.IsDeleted = 0
@@ -68,7 +68,7 @@ router.get('/:id', async (req, res) => {
 
         const [danhSachThietBi] = await db.query(
             `SELECT ts.MaTaiSan, ts.MaQuanLy, ts.TenTaiSan, ts.TrangThai,
-                    ts.Gia, ts.NgayNhap, ts.HinhAnh, ts.QRCode,
+                    ts.Gia, ts.SoLuong, ts.NgayNhap, ts.HinhAnh, ts.QRCode,
                     lt.TenLoai, lt.NhomLoai, lt.KyHieu,
                     nd.HoTen AS NguoiSuDung
              FROM TaiSan ts
@@ -179,7 +179,7 @@ router.delete('/:id', adminOnly, async (req, res) => {
         if (!existing) return res.status(404).json({ success: false, message: 'Không tìm thấy phòng' });
 
         const [[{ soThietBi }]] = await db.query(
-            `SELECT COUNT(*) AS soThietBi FROM TaiSan WHERE MaPhong = ? AND IsDeleted = 0`, [id]
+            `SELECT COALESCE(SUM(SoLuong), 0) AS soThietBi FROM TaiSan WHERE MaPhong = ? AND IsDeleted = 0`, [id]
         );
         if (soThietBi > 0) {
             return res.status(409).json({

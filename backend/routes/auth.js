@@ -66,6 +66,7 @@ router.post('/login', async (req, res) => {
                 TenDangNhap: user.TenDangNhap,
                 HoTen:       user.HoTen,
                 VaiTro:      user.VaiTro,
+                MaKhoa:      user.MaKhoa ?? null,
             },
             JWT_SECRET,
             { expiresIn: '8h' }

@@ -2,7 +2,8 @@ import React from 'react';
 import { Route, Outlet, Navigate } from 'react-router-dom';
 import { AdminLayout } from '../components/layout/AdminLayout';
 import { DeviceCategoryProvider } from '../contexts/DeviceCategoryContext';
-import { storage } from '../utils/storage';
+import { useAuthContext } from '../contexts/AuthContext';
+import type { UserRole } from '../types/auth.types';
 
 // ── Pages ──────────────────────────────────────────────────────────
 import DashboardPage                from '../pages/Dashboard/DashboardPage';
@@ -19,13 +20,27 @@ import StatByDepartmentPage         from '../pages/Reports/StatByDepartmentPage'
 import MaintenanceHistoryPage       from '../pages/Reports/MaintenanceHistoryPage';
 import LiquidatedDevicePage         from '../pages/Reports/LiquidatedDevicePage';
 
-/**
- * ProtectedLayout – kiểm tra token, redirect /login nếu chưa đăng nhập.
- * DeviceCategoryProvider mount tại đây để chỉ fetch sau khi authenticated.
- */
-export const ProtectedLayout: React.FC = () => {
-  const token = storage.get<string>('token');
-  if (!token) return <Navigate to="/login" replace />;
+// ─────────────────────────────────────────────────────────────────────────────
+// ProtectedLayout
+// Bảo vệ routes: kiểm tra đăng nhập + vai trò.
+// Props:
+//   allowedRoles — nếu undefined thì chỉ yêu cầu đăng nhập, không check role
+// ─────────────────────────────────────────────────────────────────────────────
+interface ProtectedLayoutProps {
+  allowedRoles?: UserRole[];
+}
+
+export const ProtectedLayout: React.FC<ProtectedLayoutProps> = ({ allowedRoles }) => {
+  const { user, homeRoute } = useAuthContext();
+
+  // Chưa đăng nhập → login
+  if (!user) return <Navigate to="/login" replace />;
+
+  // Vào route không có quyền → redirect về dashboard của role hiện tại
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to={homeRoute} replace />;
+  }
+
   return (
     <DeviceCategoryProvider>
       <AdminLayout>

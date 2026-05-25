@@ -47,15 +47,6 @@ const LoginPage: React.FC = () => {
             Liên hệ quản trị viên
           </a>
         </p>
-        <p className="text-center text-sm text-[#74777d]">
-          Chưa có tài khoản?{' '}
-          <Link
-            to="/register"
-            className="text-[#26a69a] hover:underline font-semibold transition-colors"
-          >
-            Đăng ký ngay
-          </Link>
-        </p>
       </div>
     </AuthLayout>
   );

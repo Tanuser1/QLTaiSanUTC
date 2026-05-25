@@ -3,28 +3,16 @@ import { bienbanService } from '../../services/bienbanService';
 import SimpleTable from '../../components/common/SimpleTable';
 import type { RepairReport } from '../../types/bienban.types';
 
-const STATUS_LABELS: Record<string, string> = {
-  pending: 'Chờ duyệt',
-  approved: 'Đã duyệt',
-  completed: 'Hoàn thành',
-  rejected: 'Từ chối',
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-orange-100 text-orange-800',
-  approved: 'bg-blue-100 text-blue-800',
-  completed: 'bg-green-100 text-green-800',
-  rejected: 'bg-red-100 text-red-800',
-};
-
-const RepairRoomPage: React.FC = () => {
+const BGHDashboard: React.FC = () => {
   const [reports, setReports] = useState<RepairReport[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchReports = async () => {
     setIsLoading(true);
     try {
-      const res = await bienbanService.getAll({ limit: 100 });
+      // BGH role backend automatically filters to pending reports if TrangThai is not provided, 
+      // but let's be explicit and get all to show them if we want, or just let backend handle it
+      const res = await bienbanService.getAll();
       setReports(res.items);
     } catch (error) {
       console.error('Lỗi khi tải biên bản:', error);
@@ -65,32 +53,22 @@ const RepairRoomPage: React.FC = () => {
 
   const columns = [
     { header: 'Mã BB', accessor: 'id', render: (item: any) => `#${item.id}` },
-    { header: 'Thiết bị', accessor: 'assetName' },
     { header: 'Chi tiết hỏng', accessor: 'damageDetail' },
-    { header: 'Đề xuất', accessor: 'proposal' },
+    { header: 'Đề xuất sửa chữa', accessor: 'proposal' },
     { header: 'KTV Lập', accessor: 'technicianName' },
     { header: 'Kinh phí ước tính', accessor: 'estimatedCost', render: (item: any) => `${item.estimatedCost.toLocaleString()} đ` },
-    { 
-      header: 'Trạng thái', 
-      accessor: 'status',
-      render: (item: any) => (
-        <span className={`px-2 py-1 rounded text-xs font-medium ${STATUS_COLORS[item.status] || 'bg-gray-100 text-gray-800'}`}>
-          {STATUS_LABELS[item.status] || item.status}
-        </span>
-      )
-    },
     {
       header: 'Hành động',
       accessor: 'actions',
       render: (item: RepairReport) => (
         <div className="flex gap-2">
-          {item.status === 'pending' && (
+          {item.status === 'pending' ? (
             <>
               <button 
                 onClick={() => handleApprove(item.id, 'DongY')}
                 className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
               >
-                Duyệt
+                Đồng ý
               </button>
               <button 
                 onClick={() => handleApprove(item.id, 'TuChoi')}
@@ -99,6 +77,8 @@ const RepairRoomPage: React.FC = () => {
                 Từ chối
               </button>
             </>
+          ) : (
+            <span className="text-gray-500 text-sm">Đã xử lý</span>
           )}
         </div>
       )
@@ -108,8 +88,8 @@ const RepairRoomPage: React.FC = () => {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#191c1d]">Quản lý Biên bản sửa chữa</h1>
-        <p className="text-sm text-[#74777d] mt-1">Theo dõi toàn bộ các báo cáo tình trạng thiết bị từ KTV và cấp kinh phí</p>
+        <h1 className="text-2xl font-bold text-[#191c1d]">Phê duyệt kinh phí sửa chữa</h1>
+        <p className="text-sm text-[#74777d] mt-1">Danh sách biên bản đang chờ Ban Giám Hiệu duyệt</p>
       </div>
       <div className="bg-white rounded-xl shadow-sm border border-[#e1e3e4] overflow-hidden">
         <SimpleTable
@@ -122,4 +102,4 @@ const RepairRoomPage: React.FC = () => {
   );
 };
 
-export default RepairRoomPage;
+export default BGHDashboard;

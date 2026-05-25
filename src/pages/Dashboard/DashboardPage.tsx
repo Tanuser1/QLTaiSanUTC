@@ -4,6 +4,7 @@ import {
   ClipboardList, FileText, Trash2,
   ChevronRight, BarChart3, PieChart,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import apiClient from '../../services/apiClient';
 
 /* ─────────────────────────────────────────────────────────────
@@ -306,9 +307,9 @@ const DashboardPage: React.FC = () => {
                   </span>
                 )}
               </div>
-              <button className="text-xs text-[#0A84FF] font-medium hover:underline flex items-center gap-0.5">
+              <Link to="/requests" className="text-xs text-[#0A84FF] font-medium hover:underline flex items-center gap-0.5">
                 Xem tất cả <ChevronRight size={12} />
-              </button>
+              </Link>
             </div>
             <div className="divide-y divide-gray-50">
               {loading ? <SkeletonRows /> : !stats?.recentSupportRequests?.length ? (
@@ -349,9 +350,9 @@ const DashboardPage: React.FC = () => {
                   </span>
                 )}
               </div>
-              <button className="text-xs text-[#0A84FF] font-medium hover:underline flex items-center gap-0.5">
+              <Link to="/maintenance" className="text-xs text-[#0A84FF] font-medium hover:underline flex items-center gap-0.5">
                 Xem tất cả <ChevronRight size={12} />
-              </button>
+              </Link>
             </div>
             <div className="divide-y divide-gray-50">
               {loading ? <SkeletonRows /> : !stats?.recentRepairReports?.length ? (

@@ -127,6 +127,7 @@ interface DataTableProps {
   rows?:            TableRowData[];
   isLoading?:       boolean;
   serverTotal?:     number;
+  serverTotalQuantity?: number;
   page?:            number;
   limit?:           number;
   onPageChange?:    (page: number) => void;
@@ -143,6 +144,7 @@ export const DataTable: React.FC<DataTableProps> = ({
   rows: externalRows,
   isLoading = false,
   serverTotal,
+  serverTotalQuantity,
   page: externalPage,
   limit: externalLimit,
   onPageChange,
@@ -215,6 +217,10 @@ export const DataTable: React.FC<DataTableProps> = ({
   const total      = (isServerMode && filterStatus === 'all')
     ? (serverTotal ?? filteredData.length)
     : filteredData.length;
+
+  const totalQuantityView = isServerMode && filterStatus === 'all' && serverTotalQuantity !== undefined
+    ? serverTotalQuantity
+    : filteredData.reduce((sum, r) => sum + (r.quantity ?? 1), 0);
   const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
   const pageData   = isServerMode
     ? filteredData
@@ -263,7 +269,7 @@ export const DataTable: React.FC<DataTableProps> = ({
       {/* ── Toolbar ── */}
       <div className="flex flex-wrap items-center gap-3 px-5 py-4 border-b border-[#e1e3e4]">
         <h2 className="text-[17px] font-bold text-[#041627] mr-2" style={{ fontFamily: 'Manrope, sans-serif' }}>
-          {categoryName ? `Danh mục: ${categoryName}` : `Tìm thấy ${total} Thiết Bị`}
+          {categoryName ? `Danh mục: ${categoryName}` : `Tìm thấy ${totalQuantityView} Thiết Bị`}
         </h2>
 
         {/* Search */}

@@ -32,4 +32,19 @@ const adminOnly = (req, res, next) => {
     next();
 };
 
-module.exports = { authMiddleware, adminOnly, JWT_SECRET };
+/**
+ * Middleware kiểm tra vai trò linh hoạt
+ * Dùng: checkRole('Admin'), checkRole('KyThuat', 'Admin')
+ * Lưu ý: phải dùng sau authMiddleware (req.user đã được gán)
+ */
+const checkRole = (...roles) => (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.VaiTro)) {
+        return res.status(403).json({
+            success: false,
+            message: `Chức năng này yêu cầu vai trò: ${roles.join(' hoặc ')}`,
+        });
+    }
+    next();
+};
+
+module.exports = { authMiddleware, adminOnly, checkRole, JWT_SECRET };

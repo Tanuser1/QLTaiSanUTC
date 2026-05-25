@@ -40,10 +40,17 @@ async function sinhMaQuanLy(maLoai) {
 router.get('/', async (req, res) => {
     try {
         const { MaPhong, MaLoai, TrangThai, keyword, page = 1, limit = 20, inKho } = req.query;
+        const { VaiTro, MaKhoa } = req.user;
         const offset = (parseInt(page) - 1) * parseInt(limit);
 
         let where = 'WHERE ts.IsDeleted = 0';
         const params = [];
+
+        // GiaoVien chỉ thấy tài sản thuộc khoa mình
+        if (VaiTro === 'GiaoVien' && MaKhoa) {
+            where += ' AND p.MaKhoa = ?';
+            params.push(MaKhoa);
+        }
 
         if (MaPhong)       { where += ' AND ts.MaPhong = ?';   params.push(MaPhong); }
         if (MaLoai)        { where += ' AND ts.MaLoai = ?';    params.push(MaLoai); }
@@ -72,13 +79,16 @@ router.get('/', async (req, res) => {
             [...params, parseInt(limit), offset]
         );
 
-        const [[{ total }]] = await db.query(
-            `SELECT COUNT(*) AS total FROM TaiSan ts ${where}`, params
+        const [[{ total, totalQuantity }]] = await db.query(
+            `SELECT COUNT(*) AS total, COALESCE(SUM(ts.SoLuong), 0) AS totalQuantity FROM TaiSan ts LEFT JOIN Phong p ON p.MaPhong = ts.MaPhong ${where}`, params
         );
 
         res.json({
             success: true,
-            data: paginatedResponse(rows.map(mapAsset), total, parseInt(page), parseInt(limit)),
+            data: {
+                ...paginatedResponse(rows.map(mapAsset), total, parseInt(page), parseInt(limit)),
+                totalQuantity
+            }
         });
     } catch (error) {
         console.error('[TAISAN GET ALL]', error);

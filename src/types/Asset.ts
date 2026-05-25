@@ -70,6 +70,7 @@ export interface AssetPagination {
 }
 
 export interface AssetListResponse {
-  items:      ApiAsset[];
-  pagination: AssetPagination;
+  items:         ApiAsset[];
+  pagination:    AssetPagination;
+  totalQuantity?: number;
 }
