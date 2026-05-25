@@ -430,10 +430,10 @@ const AddDeviceModal: React.FC<AddDeviceModalProps> = ({ defaultCategoryId, onCl
           <button
             type="submit"
             disabled={saving}
-            className="px-5 py-2 text-sm font-semibold text-white rounded-lg transition-opacity flex items-center gap-2"
+            className="px-5 py-2 text-sm font-semibold text-white rounded-lg transition-opacity"
             style={{ backgroundColor: '#26a69a', opacity: saving ? 0.7 : 1 }}
           >
-            {saving ? 'Đang lưu...' : '💾 Lưu thiết bị'}
+            {saving ? 'Đang lưu...' : 'Lưu thiết bị'}
           </button>
         </div>
       </form>

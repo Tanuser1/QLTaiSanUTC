@@ -324,9 +324,11 @@ export const DataTable: React.FC<DataTableProps> = ({
         {/* Thêm mới */}
         <button
           onClick={onAddAsset}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded text-white bg-[#00796b] hover:bg-[#00695c] transition-colors shadow-sm"
+          className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg text-white transition-opacity hover:opacity-90"
+          style={{ backgroundColor: '#26a69a' }}
         >
-          <Plus size={14} /> + THÊM MỚI
+          <Plus size={14} />
+          Thêm thiết bị
         </button>
       </div>
 

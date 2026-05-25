@@ -246,7 +246,7 @@ const StatByDeviceTypePage: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-[#f8f9fa] text-xs font-semibold text-[#44474c] uppercase tracking-wide border-b border-[#e1e3e4]">
+              <tr className="border-b border-[#00695c] text-xs font-semibold text-white uppercase tracking-wide" style={{ backgroundColor: '#00796b' }}>
                 <th className="px-4 py-3 text-center w-12">STT</th>
                 <th className="px-4 py-3 text-left">Danh mục</th>
                 <th className="px-4 py-3 text-left">Nhóm loại</th>

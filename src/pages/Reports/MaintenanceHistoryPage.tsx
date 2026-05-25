@@ -279,7 +279,7 @@ const MaintenanceHistoryPage: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-sm" style={{ minWidth: '900px' }}>
               <thead>
-                <tr className="bg-[#f8f9fa] text-xs font-semibold text-[#44474c] uppercase tracking-wide border-b border-[#e1e3e4]">
+                <tr className="border-b border-[#00695c] text-xs font-semibold text-white uppercase tracking-wide" style={{ backgroundColor: '#00796b' }}>
                   <th className="px-4 py-3 text-center w-10">#</th>
                   <th className="px-4 py-3 text-left">Tài sản</th>
                   <th className="px-4 py-3 text-left">Phòng</th>

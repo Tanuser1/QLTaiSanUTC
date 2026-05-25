@@ -77,7 +77,7 @@ const DeviceCategoryManagementPage: React.FC = () => {
           {/* Header */}
           <div
             className="grid gap-3 px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-white border-b"
-            style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr 120px', backgroundColor: '#1a237e' }}
+            style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr 120px', backgroundColor: '#00796b' }}
           >
             <span>Tên loại tài sản</span>
             <span>Ký hiệu</span>
