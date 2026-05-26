@@ -3,6 +3,15 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { yeucauService } from '../../services/yeucauService';
 import { bienbanService } from '../../services/bienbanService';
 import type { SupportRequest } from '../../types/yeucau.types';
+import type { RepairProposal } from '../../types/bienban.types';
+
+const getApiErrorMessage = (error: unknown, fallback: string) => {
+  if (typeof error === 'object' && error !== null && 'response' in error) {
+    const response = (error as { response?: { data?: { message?: unknown } } }).response;
+    if (typeof response?.data?.message === 'string') return response.data.message;
+  }
+  return fallback;
+};
 
 const KTVLapBienBan: React.FC = () => {
   const { id } = useParams();
@@ -12,7 +21,7 @@ const KTVLapBienBan: React.FC = () => {
 
   const [formData, setFormData] = useState({
     ChiTietHong: '',
-    DeXuat: 'SuaChua' as 'SuaChua' | 'ThayMoi' | 'ThanhLy',
+    DeXuat: 'SuaChua' as RepairProposal,
     ChiPhiUocTinh: 0,
     GhiChu: '',
   });
@@ -44,8 +53,8 @@ const KTVLapBienBan: React.FC = () => {
         GhiChu: formData.GhiChu,
       });
       navigate('/ktv/bienban');
-    } catch (error: any) {
-      alert(error.response?.data?.message || 'Lỗi khi lập biên bản');
+    } catch (error: unknown) {
+      alert(getApiErrorMessage(error, 'Lỗi khi lập biên bản'));
     } finally {
       setIsSubmitting(false);
     }
@@ -83,7 +92,7 @@ const KTVLapBienBan: React.FC = () => {
             <select 
               className="w-full px-3 py-2 border rounded-lg focus:ring-[#26a69a]"
               value={formData.DeXuat}
-              onChange={(e) => setFormData({ ...formData, DeXuat: e.target.value as any })}
+              onChange={(e) => setFormData({ ...formData, DeXuat: e.target.value as RepairProposal })}
             >
               <option value="SuaChua">Sửa chữa</option>
               <option value="ThayMoi">Thay linh kiện mới</option>

@@ -268,7 +268,7 @@ const StatByDepartmentPage: React.FC = () => {
                           ) : <span className="text-[#c4c6cd]">—</span>}
                         </td>
                         <td className="px-4 py-3 text-center font-bold text-[#191c1d]">{r.assetCount}</td>
-                        <td className="px-4 py-3 text-right font-mono text-xs text-[#44474c]">
+                        <td className="px-4 py-3 text-right text-sm font-medium text-[#191c1d]">
                           {fmtCurrency(r.totalValue)}
                         </td>
                       </tr>
@@ -290,7 +290,7 @@ const StatByDepartmentPage: React.FC = () => {
                       Tổng cộng
                     </td>
                     <td className="px-4 py-3 text-center">{totals.assetCount}</td>
-                    <td className="px-4 py-3 text-right font-mono text-xs">
+                    <td className="px-4 py-3 text-right text-sm font-bold">
                       {fmtCurrency(totals.totalValue)}
                     </td>
                   </tr>

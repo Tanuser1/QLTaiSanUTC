@@ -253,5 +253,55 @@ router.put('/:id/tu-choi', checkRole('Admin'), async (req, res) => {
         res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
     }
 });
+// ─── PUT /api/yeucau/:id/dong-yeu-cau ─────────────────────────────────────────
+/**
+ * KTV đóng yêu cầu nhanh (không có lỗi) -> chuyển sang trạng thái 6 (Hoàn thành)
+ * Ghi vết vào LichSuSuaChua với ChiPhi = 0 và KetQua = 1.
+ */
+router.put('/:id/dong-yeu-cau', checkRole('KyThuat'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { LyDo } = req.body;
+        const { MaNguoiDung } = req.user;
+
+        if (!LyDo) return res.status(400).json({ success: false, message: 'Cần ghi rõ lý do đóng yêu cầu' });
+
+        const [[yc]] = await db.query(
+            `SELECT MaYeuCau, TrangThai, NguoiXuLy, MaTaiSan FROM YeuCauHoTro WHERE MaYeuCau = ?`, [id]
+        );
+        if (!yc) return res.status(404).json({ success: false, message: 'Không tìm thấy yêu cầu' });
+        if (yc.NguoiXuLy !== MaNguoiDung) {
+            return res.status(403).json({ success: false, message: 'Yêu cầu này không được phân công cho bạn' });
+        }
+        if (yc.TrangThai !== 3) {
+            return res.status(409).json({ success: false, message: 'Yêu cầu phải đang ở trạng thái "Đang kiểm tra"' });
+        }
+
+        // Ghi vào lịch sử sửa chữa (không qua Biên bản)
+        await db.query(
+            `INSERT INTO LichSuSuaChua (MaTaiSan, MaYeuCau, MaBienBan, NgaySua, ChiPhi, MoTa, NguoiSuaChua, KetQua)
+             VALUES (?, ?, NULL, CURDATE(), 0, ?, ?, 1)`,
+            [yc.MaTaiSan, id, LyDo, MaNguoiDung]
+        );
+
+        // Cập nhật trạng thái Yêu cầu -> 6 (Hoàn thành)
+        await db.query(
+            `UPDATE YeuCauHoTro SET TrangThai = 6 WHERE MaYeuCau = ?`,
+            [id]
+        );
+        
+        // Cũng nên đổi trạng thái thiết bị thành 1 (Đang dùng) nếu trước đó là 3 (Hỏng)
+        await db.query(
+            `UPDATE TaiSan SET TrangThai = 1 WHERE MaTaiSan = ? AND TrangThai IN (3, 4)`,
+            [yc.MaTaiSan]
+        );
+
+        const [[updated]] = await db.query(`${BASE_SELECT} WHERE yc.MaYeuCau = ?`, [id]);
+        res.json({ success: true, message: 'Đã đóng yêu cầu', data: mapSupportRequest(updated) });
+    } catch (error) {
+        console.error('[YEUCAU DONG]', error);
+        res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
+    }
+});
 
 module.exports = router;

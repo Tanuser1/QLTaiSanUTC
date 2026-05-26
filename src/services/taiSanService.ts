@@ -38,6 +38,15 @@ export const taiSanService = {
     return data.data as ApiAsset;
   },
 
+  async markPendingLiquidation(id: number | string, payload: { LyDoThanhLy: string; GhiChu?: string }): Promise<ApiAsset> {
+    const { data } = await apiClient.post(`/taisan/${id}/thanh-ly`, payload);
+    return data.data as ApiAsset;
+  },
+
+  async completeLiquidation(id: number | string, payload: { LyDoThanhLy: string; GiaThanhLy?: number; GhiChu?: string }): Promise<void> {
+    await apiClient.post(`/taisan/${id}/hoan-tat-thanh-ly`, payload);
+  },
+
   async deleteById(id: number | string): Promise<void> {
     await apiClient.delete(`/taisan/${id}`);
   },

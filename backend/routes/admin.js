@@ -31,7 +31,7 @@ router.get('/dashboard', async (req, res) => {
                     (SELECT COUNT(*) FROM YeuCauHoTro WHERE TrangThai=1)                                     AS YeuCauMoi,
                     (SELECT COUNT(*) FROM YeuCauHoTro WHERE TrangThai IN(2,3))                               AS YeuCauDangXuLy,
                     (SELECT COUNT(*) FROM BienBanSuaChua WHERE TrangThai=1)                                  AS BienBanChoDuyet,
-                    (SELECT COUNT(*) FROM ThanhLy WHERE TrangThai=1)                                         AS ChoThanhLyKho
+                    (SELECT COALESCE(SUM(SoLuong),0) FROM TaiSan WHERE TrangThai=5 AND IsDeleted=0)          AS ChoThanhLyKho
             `),
             db.query('SELECT COUNT(*) AS totalRooms FROM Phong WHERE IsDeleted = 0'),
 
@@ -401,6 +401,102 @@ router.get('/stats/repair-history', async (req, res) => {
         });
     } catch (error) {
         console.error('[STATS REPAIR HISTORY]', error);
+        res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
+    }
+});
+
+/**
+ * GET /api/admin/thanh-ly
+ * Danh sách thiết bị thanh lý (lịch sử bán đồ hỏng)
+ * Query: ?TrangThai=2&from=YYYY-MM-DD&to=YYYY-MM-DD&keyword=&page=1&limit=20
+ */
+router.get('/thanh-ly', async (req, res) => {
+    try {
+        const { TrangThai = '2', from, to, keyword, page = 1, limit = 20 } = req.query;
+        const offset = (parseInt(page) - 1) * parseInt(limit);
+
+        let where = 'WHERE 1=1';
+        const params = [];
+
+        if (TrangThai === 'all') {
+            where += ' AND tl.TrangThai IN (2, 3)';
+        } else if (TrangThai) {
+            where += ' AND tl.TrangThai = ?';
+            params.push(TrangThai);
+        }
+        if (from)      { where += ' AND tl.NgayThanhLy >= ?';          params.push(from); }
+        if (to)        { where += ' AND tl.NgayThanhLy <= ?';          params.push(to); }
+        if (keyword)   { where += ' AND (ts.TenTaiSan LIKE ? OR ts.MaQuanLy LIKE ?)'; params.push(`%${keyword}%`, `%${keyword}%`); }
+
+        const [rows] = await db.query(
+            `SELECT
+                tl.MaThanhLy, tl.LyDoThanhLy, tl.TrangThai,
+                tl.NgayNhapKho, tl.NgayThanhLy, tl.GiaThanhLy, tl.GhiChu,
+                ts.MaQuanLy, ts.TenTaiSan,
+                lt.TenLoai, lt.NhomLoai,
+                p.TenPhong, p.TenToaNha,
+                k.TenKhoa,
+                nd_lap.HoTen    AS TenNguoiLap,
+                nd_duyet.HoTen  AS TenNguoiDuyet
+             FROM ThanhLy tl
+             JOIN TaiSan ts           ON ts.MaTaiSan      = tl.MaTaiSan
+             LEFT JOIN LoaiTaiSan lt  ON lt.MaLoai         = ts.MaLoai
+             LEFT JOIN Phong p        ON p.MaPhong          = ts.MaPhong
+             LEFT JOIN Khoa k         ON k.MaKhoa           = p.MaKhoa
+             LEFT JOIN NguoiDung nd_lap   ON nd_lap.MaNguoiDung   = tl.NguoiLap
+             LEFT JOIN NguoiDung nd_duyet ON nd_duyet.MaNguoiDung = tl.NguoiDuyet
+             ${where}
+             ORDER BY tl.NgayNhapKho DESC
+             LIMIT ? OFFSET ?`,
+            [...params, parseInt(limit), offset]
+        );
+
+        const [[{ total, tongGiaThanhLy }]] = await db.query(
+            `SELECT COUNT(*) AS total, COALESCE(SUM(tl.GiaThanhLy), 0) AS tongGiaThanhLy
+             FROM ThanhLy tl
+             JOIN TaiSan ts ON ts.MaTaiSan = tl.MaTaiSan
+             ${where}`,
+            params
+        );
+
+        const STATUS_LABEL = { 1: 'Chờ xử lý', 2: 'Đã thanh lý', 3: 'Đã hủy' };
+
+        res.json({
+            success: true,
+            data: {
+                items: rows.map(r => ({
+                    id:              r.MaThanhLy,
+                    assetCode:       r.MaQuanLy,
+                    assetName:       r.TenTaiSan,
+                    category:        r.TenLoai       ?? '—',
+                    categoryGroup:   r.NhomLoai      ?? '—',
+                    roomName:        r.TenPhong       ?? '—',
+                    building:        r.TenToaNha      ?? '—',
+                    department:      r.TenKhoa        ?? '—',
+                    reason:          r.LyDoThanhLy,
+                    status:          r.TrangThai,
+                    statusLabel:     STATUS_LABEL[r.TrangThai] ?? '—',
+                    receivedDate:    r.NgayNhapKho,
+                    liquidatedDate:  r.NgayThanhLy   ?? null,
+                    salePrice:       Number(r.GiaThanhLy) || 0,
+                    note:            r.GhiChu         ?? null,
+                    createdBy:       r.TenNguoiLap    ?? '—',
+                    approvedBy:      r.TenNguoiDuyet  ?? null,
+                })),
+                pagination: {
+                    total:      Number(total),
+                    page:       parseInt(page),
+                    limit:      parseInt(limit),
+                    totalPages: Math.ceil(Number(total) / parseInt(limit)),
+                },
+                summary: {
+                    total:          Number(total),
+                    tongGiaThanhLy: Number(tongGiaThanhLy),
+                },
+            },
+        });
+    } catch (error) {
+        console.error('[ADMIN THANH LY]', error);
         res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
     }
 });

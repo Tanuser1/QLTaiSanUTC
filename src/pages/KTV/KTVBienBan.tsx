@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { bienbanService } from '../../services/bienbanService';
 import SimpleTable from '../../components/common/SimpleTable';
+import type { Column } from '../../components/common/SimpleTable';
 import type { RepairReport } from '../../types/bienban.types';
 
 const STATUS_LABELS: Record<string, string> = {
@@ -36,20 +37,20 @@ const KTVBienBan: React.FC = () => {
       await bienbanService.complete(id, { ChiPhi: Number(chiPhi), KetQua: 1 });
       fetchReports();
       alert('Đã cập nhật hoàn thành sửa chữa!');
-    } catch (error) {
+    } catch {
       alert('Lỗi khi cập nhật trạng thái');
     }
   };
 
-  const columns = [
-    { header: 'Mã BB', accessor: 'id', render: (item: any) => `#${item.id}` },
+  const columns: Column<RepairReport>[] = [
+    { header: 'Mã BB', accessor: 'id', render: (item) => `#${item.id}` },
     { header: 'Chi tiết hỏng', accessor: 'damageDetail' },
     { header: 'Đề xuất', accessor: 'proposal' },
-    { header: 'Kinh phí ước tính', accessor: 'estimatedCost', render: (item: any) => `${item.estimatedCost.toLocaleString()} đ` },
+    { header: 'Kinh phí ước tính', accessor: 'estimatedCost', render: (item) => `${item.estimatedCost.toLocaleString()} đ` },
     { 
       header: 'Trạng thái', 
       accessor: 'status',
-      render: (item: any) => (
+      render: (item) => (
         <span className={`px-2 py-1 rounded text-xs ${item.status === 'pending' ? 'bg-orange-100 text-orange-800' : item.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
           {STATUS_LABELS[item.status]}
         </span>

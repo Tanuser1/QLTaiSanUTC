@@ -45,15 +45,10 @@ const MOCK_DATA: TableRowData[] = [
 ───────────────────────────────────────────────────────────── */
 const DataTableRow: React.FC<{
   row: TableRowData;
-  selected: boolean;
-  onSelect: (id: string) => void;
   onDelete: (row: TableRowData) => void;
   onView:   (row: TableRowData) => void;
-}> = ({ row, selected, onSelect, onDelete, onView }) => (
-  <tr className={`border-b border-[#e1e3e4] last:border-0 cursor-pointer transition-colors duration-100 ${row.attention ? 'bg-[#fff176]/10' : ''} ${selected ? 'bg-[#041627]/5' : 'hover:bg-[#041627]/5'}`}>
-    <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-      <input type="checkbox" checked={selected} onChange={() => onSelect(row.id)} className="w-4 h-4 rounded border-[#c4c6cd] accent-[#26a69a] cursor-pointer" />
-    </td>
+}> = ({ row, onDelete, onView }) => (
+  <tr className={`border-b border-[#e1e3e4] last:border-0 cursor-pointer transition-colors duration-100 ${row.attention ? 'bg-[#fff176]/10' : 'hover:bg-[#041627]/5'}`}>
     <td className="px-3 py-2.5 text-sm font-medium text-[#002957] tabular-nums whitespace-nowrap">{row.assetCode}</td>
     <td className="px-3 py-2.5 text-sm text-[#191c1d] max-w-[200px] truncate">{row.assetName}</td>
     <td className="px-3 py-2.5 text-sm text-[#44474c] whitespace-nowrap">{row.category}</td>
@@ -63,7 +58,6 @@ const DataTableRow: React.FC<{
       </span>
     </td>
     <td className="px-3 py-2.5 text-sm font-medium text-[#191c1d] tabular-nums whitespace-nowrap">{row.value}</td>
-    <td className="px-3 py-2.5 text-sm text-[#44474c] whitespace-nowrap">{row.assignedTo}</td>
     <td className="px-3 py-2.5 text-sm text-[#44474c] max-w-[150px] truncate">{row.specs}</td>
     <td className="px-3 py-2.5 text-sm text-[#44474c] whitespace-nowrap">{row.location}</td>
     <td className="px-3 py-2.5"><StatusChip status={row.status} /></td>
@@ -101,7 +95,6 @@ const COLUMNS = [
   { key: 'category',   label: 'Loại',          sortable: true  },
   { key: 'quantity',   label: 'Số lượng',      sortable: false },
   { key: 'value',      label: 'Giá',           sortable: true  },
-  { key: 'assignedTo', label: 'Người dùng',    sortable: true  },
   { key: 'specs',      label: 'Cấu hình',      sortable: false },
   { key: 'location',   label: 'Phòng',         sortable: true  },
   { key: 'status',     label: 'Trạng thái',    sortable: false },
@@ -157,7 +150,6 @@ export const DataTable: React.FC<DataTableProps> = ({
 }) => {
   const isServerMode = externalRows !== undefined;
 
-  const [selected,      setSelected]      = useState<Set<string>>(new Set());
   const [sortKey,       setSortKey]       = useState<SortKey>(null);
   const [sortDir,       setSortDir]       = useState<SortDir>('asc');
   const [search,        setSearch]        = useState('');
@@ -225,26 +217,6 @@ export const DataTable: React.FC<DataTableProps> = ({
   const pageData   = isServerMode
     ? filteredData
     : filteredData.slice((activePage - 1) * rowsPerPage, activePage * rowsPerPage);
-
-  const allSelected  = pageData.length > 0 && pageData.every((r) => selected.has(r.id));
-  const someSelected = pageData.some((r) => selected.has(r.id));
-
-  const toggleSelectAll = () => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (allSelected) pageData.forEach((r) => next.delete(r.id));
-      else pageData.forEach((r) => next.add(r.id));
-      return next;
-    });
-  };
-
-  const toggleSelect = (id: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
 
   const SortIcon: React.FC<{ column: string }> = ({ column }) => {
     if (sortKey !== column) return <ChevronsUpDown size={12} className="text-[#c4c6cd]" />;
@@ -317,16 +289,6 @@ export const DataTable: React.FC<DataTableProps> = ({
 
         <div className="flex-1" />
 
-        {/* Bulk delete */}
-        {selected.size > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-[#74777d]">Đã chọn {selected.size}</span>
-            <button className="flex items-center gap-1.5 text-xs text-[#ef5350] hover:bg-[#ef5350]/10 px-2 py-1.5 rounded transition-colors">
-              <Trash2 size={13} /> Xoá
-            </button>
-          </div>
-        )}
-
         {/* Thêm mới */}
         <button
           onClick={onAddAsset}
@@ -343,15 +305,6 @@ export const DataTable: React.FC<DataTableProps> = ({
         <table className="w-full text-left border-collapse" style={{ minWidth: '900px' }}>
           <thead className="sticky top-0 z-10">
             <tr className="border-b border-[#00695c]" style={{ backgroundColor: '#00796b', color: '#ffffff' }}>
-              <th className="px-3 py-3 w-10">
-                <input
-                  type="checkbox"
-                  checked={allSelected}
-                  ref={(el) => { if (el) el.indeterminate = someSelected && !allSelected; }}
-                  onChange={toggleSelectAll}
-                  className="w-4 h-4 rounded border-[#c4c6cd] accent-[#26a69a] cursor-pointer"
-                />
-              </th>
               {COLUMNS.map((col) => (
                 <th
                   key={col.key}
@@ -385,7 +338,7 @@ export const DataTable: React.FC<DataTableProps> = ({
               </tr>
             ) : (
               pageData.map((row) => (
-                <DataTableRow key={row.id} row={row} selected={selected.has(row.id)} onSelect={toggleSelect} onDelete={onDeleteRow ?? (() => {})} onView={onViewRow ?? (() => {})} />
+                <DataTableRow key={row.id} row={row} onDelete={onDeleteRow ?? (() => {})} onView={onViewRow ?? (() => {})} />
               ))
             )}
           </tbody>

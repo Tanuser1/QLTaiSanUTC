@@ -11,6 +11,7 @@ import type { ApiAsset, RepairHistory, ComponentLink } from '../../types/Asset';
 import type { DeviceCategory } from '../../types/DeviceCategory';
 import { ConfirmModal } from '../../components/common/ConfirmModal';
 import { useDeviceCategoryContext } from '../../contexts/DeviceCategoryContext';
+import { QRCodeSVG } from 'qrcode.react';
 
 /* ── helpers ── */
 const STATUS_STYLE: Record<string, { bg: string; text: string; dot: string; label: string }> = {
@@ -217,7 +218,7 @@ const AssetEditModal: React.FC<{
                   <option value="">— Chọn loại —</option>
                   {flatCats.map(cat => (
                     <option key={cat.id} value={cat.id}>
-                      {cat.parentId ? `  └ ${cat.name}` : cat.name}
+                      {cat.parentId ? `\u00a0\u00a0└ ${cat.name}` : cat.name}
                     </option>
                   ))}
                 </select>
@@ -350,6 +351,7 @@ export const AssetDetailView: React.FC<AssetDetailViewProps> = ({ assetId, onBac
   const [showDel,  setShowDel]  = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
+  const [liquidating, setLiquidating] = useState(false);
 
   const loadAsset = useCallback(() => {
     setLoading(true);
@@ -372,6 +374,29 @@ export const AssetDetailView: React.FC<AssetDetailViewProps> = ({ assetId, onBac
       alert(e instanceof Error ? e.message : 'Xóa thất bại');
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleCompleteLiquidation = async () => {
+    if (!asset) return;
+    const reason = window.prompt('Nhập lý do thanh lý:', 'Thiết bị không còn khả năng sử dụng');
+    if (!reason?.trim()) return;
+
+    const priceInput = window.prompt('Nhập giá thanh lý (VNĐ):', '0');
+    if (priceInput === null) return;
+
+    setLiquidating(true);
+    try {
+      await taiSanService.completeLiquidation(asset.id, {
+        LyDoThanhLy: reason.trim(),
+        GiaThanhLy: Number(priceInput) || 0,
+      });
+      await loadAsset();
+      alert('Đã hoàn tất thanh lý thiết bị');
+    } catch (e: unknown) {
+      alert(e instanceof Error ? e.message : 'Thanh lý thất bại');
+    } finally {
+      setLiquidating(false);
     }
   };
 
@@ -414,6 +439,15 @@ export const AssetDetailView: React.FC<AssetDetailViewProps> = ({ assetId, onBac
           <ArrowLeft size={16} /> Quay lại danh sách
         </button>
         <div className="flex items-center gap-2">
+          {asset.status === 'pendingLiquidation' && (
+            <button
+              onClick={handleCompleteLiquidation}
+              disabled={liquidating}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-semibold rounded-lg border border-[#b71c1c] text-[#b71c1c] hover:bg-[#ffebee] transition-colors disabled:opacity-60"
+            >
+              <CheckCircle size={14} /> {liquidating ? 'Đang thanh lý...' : 'Hoàn tất thanh lý'}
+            </button>
+          )}
           <button
             onClick={() => setShowEdit(true)}
             className="flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-semibold rounded-lg border border-[#1a237e] text-[#1a237e] hover:bg-[#e8eaf6] transition-colors"
@@ -520,22 +554,35 @@ export const AssetDetailView: React.FC<AssetDetailViewProps> = ({ assetId, onBac
 
       {/* ── 2-col: Nhà cung cấp + Linh kiện ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card title="Nhà cung cấp" icon={<ShoppingCart size={14} />}>
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: '#e8eaf6' }}>
-              <Building2 size={16} style={{ color: '#1a237e' }} />
+        <Card title="Nhà cung cấp & QR Code" icon={<ShoppingCart size={14} />}>
+          <div className="flex justify-between items-start">
+            <div className="flex-1 pr-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: '#e8eaf6' }}>
+                  <Building2 size={16} style={{ color: '#1a237e' }} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-[#191c1d]">{asset.supplierName ?? '—'}</p>
+                  {asset.supplierPhone && (
+                    <p className="text-xs text-[#74777d] flex items-center gap-1 mt-0.5">
+                      <Phone size={11} /> {asset.supplierPhone}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <Row label="Bảo hành" value={asset.warrantyMonths ? `${asset.warrantyMonths} tháng` : null} />
             </div>
-            <div>
-              <p className="text-sm font-semibold text-[#191c1d]">{asset.supplierName ?? '—'}</p>
-              {asset.supplierPhone && (
-                <p className="text-xs text-[#74777d] flex items-center gap-1 mt-0.5">
-                  <Phone size={11} /> {asset.supplierPhone}
-                </p>
-              )}
+
+            <div className="shrink-0 flex flex-col items-center p-2 rounded-xl bg-white border border-[#e1e3e4] qrcode-svg-container" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+              <QRCodeSVG 
+                value={`Mã: ${asset.code}\nTên: ${asset.name}\nLoại: ${asset.categoryName || '—'}\nTrạng thái: ${asset.statusLabel || '—'}\n${asset.specs ? Object.entries(asset.specs).map(([k, v]) => `${k}: ${v}`).join('\n') : ''}`} 
+                size={84} 
+                level="M" 
+                includeMargin={false} 
+              />
+              <span className="text-[10px] font-mono font-semibold text-[#1a237e] mt-2 tracking-widest">{asset.code}</span>
             </div>
           </div>
-          <Row label="Bảo hành" value={asset.warrantyMonths ? `${asset.warrantyMonths} tháng` : null} />
-          <Row label="QR Code"  value={asset.qrCode ? 'Đã tạo' : 'Chưa có'} />
         </Card>
 
         <Card title={`Linh kiện đang gắn (${components.length})`} icon={<Wrench size={14} />}>
@@ -602,13 +649,37 @@ export const AssetDetailView: React.FC<AssetDetailViewProps> = ({ assetId, onBac
 
       {/* ── Footer actions ── */}
       <div className="flex items-center gap-3 pb-4">
-        {asset.qrCode && (
-          <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg border border-[#c4c6cd] text-[#44474c] bg-white hover:bg-[#f3f4f5] transition-colors">
-            <ShieldCheck size={15} /> Xem QR Code
-          </button>
-        )}
-        <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg text-white transition-colors" style={{ backgroundColor: '#ef5350' }}>
-          <AlertCircle size={15} /> Báo hỏng
+        <button 
+          className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg border border-[#c4c6cd] text-[#44474c] bg-white hover:bg-[#f3f4f5] transition-colors"
+          onClick={() => {
+            const svg = document.querySelector('.qrcode-svg-container svg');
+            if (!svg) return;
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            const img = new Image();
+            img.onload = () => {
+              canvas.width = img.width + 40;
+              canvas.height = img.height + 60;
+              if (ctx) {
+                ctx.fillStyle = "white";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 20, 20);
+                ctx.fillStyle = "black";
+                ctx.font = "bold 14px monospace";
+                ctx.textAlign = "center";
+                ctx.fillText(asset.code, canvas.width / 2, canvas.height - 15);
+              }
+              const pngFile = canvas.toDataURL("image/png");
+              const downloadLink = document.createElement("a");
+              downloadLink.download = `QR_${asset.code}.png`;
+              downloadLink.href = `${pngFile}`;
+              downloadLink.click();
+            };
+            img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+          }}
+        >
+          <ShieldCheck size={15} /> Tải mã QR
         </button>
       </div>
 

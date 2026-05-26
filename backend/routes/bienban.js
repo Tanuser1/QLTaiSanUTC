@@ -200,7 +200,10 @@ router.put('/:id/duyet', checkRole('Admin', 'BGH'), async (req, res) => {
         }
 
         const [[bb]] = await db.query(
-            `SELECT MaBienBan, TrangThai, MaYeuCau, MaKTV FROM BienBanSuaChua WHERE MaBienBan = ?`, [id]
+            `SELECT MaBienBan, TrangThai, MaYeuCau, MaKTV
+             FROM BienBanSuaChua
+             WHERE MaBienBan = ?`,
+            [id]
         );
         if (!bb) return res.status(404).json({ success: false, message: 'Không tìm thấy biên bản' });
         if (bb.TrangThai !== 1) {

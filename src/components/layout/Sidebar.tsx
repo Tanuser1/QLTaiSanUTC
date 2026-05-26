@@ -17,7 +17,6 @@ import {
   ChevronDown,
   ChevronRight,
   LogOut,
-  GraduationCap,
 } from 'lucide-react';
 import { useDeviceCategoryContext } from '../../contexts/DeviceCategoryContext';
 import { useAuthContext } from '../../contexts/AuthContext';
@@ -82,7 +81,7 @@ export const Sidebar: React.FC = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { categories } = useDeviceCategoryContext();
-  const { user } = useAuthContext();
+  const { user, logout } = useAuthContext();
   const role = user?.role || 'admin';
   const rolePrefix = role === 'admin' ? '' : `/${role === 'teacher' ? 'giaovien' : role === 'technician' ? 'ktv' : 'bgh'}`;
 
@@ -109,16 +108,13 @@ export const Sidebar: React.FC = () => {
     }
     if (role === 'technician') {
       return [
-        { label: 'Dashboard', icon: LayoutDashboard, to: `${rolePrefix}/dashboard` },
         { label: 'Yêu cầu hỗ trợ', icon: ClipboardList, to: `${rolePrefix}/yeucau` },
         { label: 'Biên bản sửa chữa', icon: Wrench, to: `${rolePrefix}/bienban` },
       ];
     }
     if (role === 'bgh') {
       return [
-        { label: 'Dashboard', icon: LayoutDashboard, to: `${rolePrefix}/dashboard` },
         { label: 'Phê duyệt biên bản', icon: Wrench, to: `${rolePrefix}/bienban` },
-        STATIC_NAV.find(n => n.label === 'Báo cáo - Thống kê')!,
       ];
     }
     // admin
@@ -159,21 +155,28 @@ export const Sidebar: React.FC = () => {
     >
       {/* ── LOGO ── */}
       <div
-        className="flex items-center gap-3 px-5 shrink-0"
-        style={{ height: '64px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}
+        className="flex items-center gap-3 px-4 shrink-0"
+        style={{ height: '72px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}
       >
-        <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: 'linear-gradient(135deg, #40c4ff 0%, #00b0ff 100%)' }}
-        >
-          <GraduationCap size={18} className="text-white" />
+        <img
+          src="/images/logo.png"
+          alt="UTC Logo"
+          className="w-12 h-12 shrink-0 object-contain drop-shadow"
+        />
+        <div className="flex flex-col min-w-0">
+          <span
+            className="text-white font-bold text-[12px] leading-tight truncate"
+            style={{ fontFamily: 'Manrope, sans-serif' }}
+          >
+            Quản lý Tài sản
+          </span>
+          <span
+            className="text-[10px] leading-tight truncate"
+            style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Inter, sans-serif' }}
+          >
+            Trường ĐH Giao thông Vận tải
+          </span>
         </div>
-        <span
-          className="text-white font-bold text-[13px] tracking-tight truncate"
-          style={{ fontFamily: 'Manrope, sans-serif' }}
-        >
-          Quản lý tài sản UTC
-        </span>
       </div>
 
       {/* ── NAV ── */}
@@ -280,7 +283,7 @@ export const Sidebar: React.FC = () => {
           style={{ color: 'rgba(255,255,255,0.55)' }}
           onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.backgroundColor = 'rgba(255,255,255,0.07)'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.backgroundColor = 'transparent'; }}
-          onClick={() => navigate('/login')}
+          onClick={logout}
         >
           <LogOut size={15} />
           <span className="text-[12px]" style={{ fontFamily: 'Inter, sans-serif' }}>Đăng xuất</span>

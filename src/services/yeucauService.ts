@@ -30,5 +30,10 @@ export const yeucauService = {
   async reject(id: number | string, LyDoTuChoi: string): Promise<SupportRequest> {
     const { data } = await apiClient.put(`/yeucau/${id}/tu-choi`, { LyDoTuChoi });
     return data.data;
+  },
+
+  async close(id: number | string, LyDo: string): Promise<SupportRequest> {
+    const { data } = await apiClient.put(`/yeucau/${id}/dong-yeu-cau`, { LyDo });
+    return data.data;
   }
 };

@@ -17,7 +17,7 @@ import { authService } from '../services/authService';
 const ROLE_HOME: Record<UserRole, string> = {
   admin:      '/dashboard',
   bgh:        '/bgh/dashboard',
-  technician: '/ktv/dashboard',
+  technician: '/ktv/yeucau',
   teacher:    '/giaovien/dashboard',
 };
 

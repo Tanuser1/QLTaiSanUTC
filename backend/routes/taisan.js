@@ -31,6 +31,34 @@ async function sinhMaQuanLy(maLoai) {
     return maQuanLy;
 }
 
+const SYSTEM_WAREHOUSE_NAME = 'Kho quản trị thiết bị';
+const SYSTEM_WAREHOUSE_BUILDING = 'Kho quản trị';
+
+async function getSystemWarehouseRoomId() {
+    const [[exactRoom]] = await db.query(
+        `SELECT MaPhong FROM Phong
+         WHERE IsDeleted = 0 AND LoaiPhong = 'Kho' AND TenPhong = ?
+         LIMIT 1`,
+        [SYSTEM_WAREHOUSE_NAME]
+    );
+    if (exactRoom) return exactRoom.MaPhong;
+
+    const [[anyWarehouse]] = await db.query(
+        `SELECT MaPhong FROM Phong
+         WHERE IsDeleted = 0 AND LoaiPhong = 'Kho'
+         ORDER BY MaPhong ASC
+         LIMIT 1`
+    );
+    if (anyWarehouse) return anyWarehouse.MaPhong;
+
+    const [result] = await db.query(
+        `INSERT INTO Phong (MaKhoa, TenPhong, TenToaNha, Tang, LoaiPhong, GhiChu)
+         VALUES (NULL, ?, ?, 1, 'Kho', ?)`,
+        [SYSTEM_WAREHOUSE_NAME, SYSTEM_WAREHOUSE_BUILDING, 'Kho hệ thống dùng cho thiết bị chờ thanh lý']
+    );
+    return result.insertId;
+}
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 /**
@@ -172,13 +200,17 @@ router.post('/', adminOnly, async (req, res) => {
 
         const MaQuanLy = await sinhMaQuanLy(MaLoai);
 
+        const targetRoomId = Number(TrangThai) === 5
+            ? await getSystemWarehouseRoomId()
+            : (MaPhong || null);
+
         const [result] = await db.query(
             `INSERT INTO TaiSan
              (MaQuanLy, TenTaiSan, MaLoai, MaNCC, MaPhong, Gia, SoLuong, ThongSoKyThuat, ThoiGianBaoHanh, NgayNhap, NamSanXuat, MaHoaDon, TrangThai)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 MaQuanLy, TenTaiSan, MaLoai,
-                MaNCC || null, MaPhong || null, Gia,
+                MaNCC || null, targetRoomId, Gia,
                 Math.max(1, parseInt(SoLuong) || 1),
                 ThongSoKyThuat ? JSON.stringify(ThongSoKyThuat) : null,
                 ThoiGianBaoHanh || null,
@@ -226,6 +258,12 @@ router.put('/:id', adminOnly, async (req, res) => {
         if (NamSanXuat      !== undefined) { fields.push('NamSanXuat = ?');       values.push(NamSanXuat); }
         if (TrangThai       !== undefined) { fields.push('TrangThai = ?');        values.push(TrangThai); }
         if (MaNguoiSuDung   !== undefined) { fields.push('MaNguoiSuDung = ?');   values.push(MaNguoiSuDung); }
+
+        if (Number(TrangThai) === 5) {
+            const warehouseRoomId = await getSystemWarehouseRoomId();
+            fields.push('MaPhong = ?', 'MaNguoiSuDung = ?');
+            values.push(warehouseRoomId, null);
+        }
 
         if (fields.length === 0) {
             return res.status(400).json({ success: false, message: 'Không có trường nào cần cập nhật' });
@@ -400,20 +438,92 @@ router.post('/:id/thanh-ly', adminOnly, async (req, res) => {
             return res.status(409).json({ success: false, message: 'Thiết bị đã được thanh lý rồi' });
         }
 
+        const warehouseRoomId = await getSystemWarehouseRoomId();
         await db.query(
-            `UPDATE TaiSan SET MaPhong = NULL, MaNguoiSuDung = NULL, TrangThai = 5 WHERE MaTaiSan = ?`, [id]
+            `UPDATE TaiSan SET MaPhong = ?, MaNguoiSuDung = NULL, TrangThai = 5 WHERE MaTaiSan = ?`,
+            [warehouseRoomId, id]
         );
 
-        const [result] = await db.query(
-            `INSERT INTO ThanhLy (MaTaiSan, LyDoThanhLy, GhiChu, NguoiLap, NgayNhapKho, TrangThai)
-             VALUES (?, ?, ?, ?, CURDATE(), 1)`,
-            [id, LyDoThanhLy, GhiChu || null, req.user.MaNguoiDung]
+        const [[updated]] = await db.query(
+            `SELECT ts.*, p.TenPhong, p.TenToaNha
+             FROM TaiSan ts
+             LEFT JOIN Phong p ON p.MaPhong = ts.MaPhong
+             WHERE ts.MaTaiSan = ?`,
+            [id]
         );
 
-        const [[thanhLy]] = await db.query(`SELECT * FROM ThanhLy WHERE MaThanhLy = ?`, [result.insertId]);
-        res.status(201).json({ success: true, message: 'Đã chuyển thiết bị vào kho thanh lý', data: mapLiquidation(thanhLy) });
+        res.json({ success: true, message: 'Đã chuyển thiết bị vào kho chờ thanh lý', data: mapAsset(updated) });
     } catch (error) {
         console.error('[TAISAN THANH LY]', error);
+        res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
+    }
+});
+
+/**
+ * POST /api/taisan/:id/hoan-tat-thanh-ly
+ * Body: { LyDoThanhLy, GiaThanhLy?, GhiChu? }
+ */
+router.post('/:id/hoan-tat-thanh-ly', adminOnly, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { LyDoThanhLy, GiaThanhLy = 0, GhiChu } = req.body;
+
+        if (!LyDoThanhLy) {
+            return res.status(400).json({ success: false, message: 'LyDoThanhLy là bắt buộc' });
+        }
+
+        const [[ts]] = await db.query(
+            `SELECT MaTaiSan, TrangThai FROM TaiSan WHERE MaTaiSan = ? AND IsDeleted = 0`, [id]
+        );
+        if (!ts) return res.status(404).json({ success: false, message: 'Không tìm thấy thiết bị' });
+        if (ts.TrangThai === 0) {
+            return res.status(409).json({ success: false, message: 'Thiết bị đã được thanh lý rồi' });
+        }
+        if (ts.TrangThai !== 5) {
+            return res.status(409).json({ success: false, message: 'Chỉ có thể hoàn tất thanh lý thiết bị đang chờ thanh lý' });
+        }
+
+        const [[pending]] = await db.query(
+            `SELECT MaThanhLy FROM ThanhLy
+             WHERE MaTaiSan = ? AND TrangThai = 1
+             ORDER BY MaThanhLy DESC
+             LIMIT 1`,
+            [id]
+        );
+
+        let liquidationId;
+        if (pending) {
+            liquidationId = pending.MaThanhLy;
+            await db.query(
+                `UPDATE ThanhLy
+                 SET LyDoThanhLy = ?, TrangThai = 2, NgayThanhLy = CURDATE(),
+                     GiaThanhLy = ?, NguoiDuyet = ?, GhiChu = ?
+                 WHERE MaThanhLy = ?`,
+                [LyDoThanhLy, GiaThanhLy, req.user.MaNguoiDung, GhiChu || null, liquidationId]
+            );
+        } else {
+            const [result] = await db.query(
+                `INSERT INTO ThanhLy
+                 (MaTaiSan, LyDoThanhLy, TrangThai, NgayNhapKho, NgayThanhLy, GiaThanhLy, NguoiLap, NguoiDuyet, GhiChu)
+                 VALUES (?, ?, 2, CURDATE(), CURDATE(), ?, ?, ?, ?)`,
+                [id, LyDoThanhLy, GiaThanhLy, req.user.MaNguoiDung, req.user.MaNguoiDung, GhiChu || null]
+            );
+            liquidationId = result.insertId;
+        }
+
+        await db.query(
+            `UPDATE TaiSan SET MaPhong = NULL, MaNguoiSuDung = NULL, TrangThai = 0 WHERE MaTaiSan = ?`,
+            [id]
+        );
+
+        const [[thanhLy]] = await db.query(`SELECT * FROM ThanhLy WHERE MaThanhLy = ?`, [liquidationId]);
+        res.json({
+            success: true,
+            message: 'Đã hoàn tất thanh lý thiết bị',
+            data: mapLiquidation(thanhLy),
+        });
+    } catch (error) {
+        console.error('[TAISAN HOAN TAT THANH LY]', error);
         res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
     }
 });

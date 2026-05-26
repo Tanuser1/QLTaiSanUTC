@@ -334,7 +334,7 @@ const StatByDeviceTypePage: React.FC = () => {
                     </td>
 
                     {/* Giá trị */}
-                    <td className="px-4 py-3 text-right text-xs text-[#44474c] font-mono">
+                    <td className="px-4 py-3 text-right text-sm font-medium text-[#191c1d]">
                       {fmtCurrency(cat.totalValue)}
                     </td>
                   </tr>
@@ -363,7 +363,7 @@ const StatByDeviceTypePage: React.FC = () => {
                   <td className="px-4 py-3 text-center text-[#92400e]">
                     {totals.pendingLiquidation || '—'}
                   </td>
-                  <td className="px-4 py-3 text-right text-xs font-mono">
+                  <td className="px-4 py-3 text-right text-sm font-bold">
                     {fmtCurrency(totals.totalValue)}
                   </td>
                   <td className="px-4 py-3">

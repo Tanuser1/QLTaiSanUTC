@@ -1,8 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { taiSanService } from '../../services/taiSanService';
 import SimpleTable from '../../components/common/SimpleTable';
+import type { Column } from '../../components/common/SimpleTable';
 import StatusChip from '../../components/common/StatusChip';
+import type { StatusType } from '../../components/common/StatusChip';
 import type { ApiAsset } from '../../types/Asset';
+
+const toStatusType = (status: string): StatusType => {
+  if (['active', 'maintenance', 'pending', 'inactive', 'ready'].includes(status)) {
+    return status as StatusType;
+  }
+  return 'inactive';
+};
 
 const GVDashboard: React.FC = () => {
   const [assets, setAssets] = useState<ApiAsset[]>([]);
@@ -23,15 +32,15 @@ const GVDashboard: React.FC = () => {
     fetchAssets();
   }, []);
 
-  const columns = [
+  const columns: Column<ApiAsset>[] = [
     { header: 'Mã', accessor: 'code' },
     { header: 'Tên tài sản', accessor: 'name' },
     { header: 'Loại', accessor: 'categoryName' },
     { header: 'Phòng', accessor: 'roomName' },
-    { 
-      header: 'Trạng thái', 
+    {
+      header: 'Trạng thái',
       accessor: 'status',
-      render: (item: any) => <StatusChip status={item.status} label={item.statusLabel} />
+      render: (item) => <StatusChip status={toStatusType(item.status)} label={item.statusLabel ?? undefined} />
     },
   ];
 

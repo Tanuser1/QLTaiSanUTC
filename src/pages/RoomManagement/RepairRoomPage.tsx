@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { bienbanService } from '../../services/bienbanService';
 import SimpleTable from '../../components/common/SimpleTable';
+import type { Column } from '../../components/common/SimpleTable';
 import type { RepairReport } from '../../types/bienban.types';
 
 const STATUS_LABELS: Record<string, string> = {
@@ -58,22 +59,22 @@ const RepairRoomPage: React.FC = () => {
         GhiChu: ghiChu 
       });
       fetchReports();
-    } catch (error) {
+    } catch {
       alert('Lỗi xử lý duyệt');
     }
   };
 
-  const columns = [
-    { header: 'Mã BB', accessor: 'id', render: (item: any) => `#${item.id}` },
+  const columns: Column<RepairReport>[] = [
+    { header: 'Mã BB', accessor: 'id', render: (item) => `#${item.id}` },
     { header: 'Thiết bị', accessor: 'assetName' },
     { header: 'Chi tiết hỏng', accessor: 'damageDetail' },
     { header: 'Đề xuất', accessor: 'proposal' },
     { header: 'KTV Lập', accessor: 'technicianName' },
-    { header: 'Kinh phí ước tính', accessor: 'estimatedCost', render: (item: any) => `${item.estimatedCost.toLocaleString()} đ` },
+    { header: 'Kinh phí ước tính', accessor: 'estimatedCost', render: (item) => `${item.estimatedCost.toLocaleString()} đ` },
     { 
       header: 'Trạng thái', 
       accessor: 'status',
-      render: (item: any) => (
+      render: (item) => (
         <span className={`px-2 py-1 rounded text-xs font-medium ${STATUS_COLORS[item.status] || 'bg-gray-100 text-gray-800'}`}>
           {STATUS_LABELS[item.status] || item.status}
         </span>

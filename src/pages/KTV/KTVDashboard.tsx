@@ -2,7 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { yeucauService } from '../../services/yeucauService';
 import SimpleTable from '../../components/common/SimpleTable';
+import type { Column } from '../../components/common/SimpleTable';
 import type { SupportRequest } from '../../types/yeucau.types';
+
+const getApiErrorMessage = (error: unknown, fallback: string) => {
+  if (typeof error === 'object' && error !== null && 'response' in error) {
+    const response = (error as { response?: { data?: { message?: unknown } } }).response;
+    if (typeof response?.data?.message === 'string') return response.data.message;
+  }
+  return fallback;
+};
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'Chờ tiếp nhận',
@@ -18,6 +27,9 @@ const KTVDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [requests, setRequests] = useState<SupportRequest[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [closeModalState, setCloseModalState] = useState<{ isOpen: boolean; requestId: number | null }>({ isOpen: false, requestId: null });
+  const [closeReason, setCloseReason] = useState('');
+  const [isClosing, setIsClosing] = useState(false);
 
   const fetchRequests = async () => {
     setIsLoading(true);
@@ -40,12 +52,27 @@ const KTVDashboard: React.FC = () => {
     try {
       await yeucauService.accept(id);
       fetchRequests();
-    } catch (error) {
+    } catch {
       alert('Lỗi khi nhận yêu cầu');
     }
   };
 
-  const columns = [
+  const handleCloseRequest = async () => {
+    if (!closeModalState.requestId || !closeReason.trim()) return;
+    setIsClosing(true);
+    try {
+      await yeucauService.close(closeModalState.requestId, closeReason);
+      setCloseModalState({ isOpen: false, requestId: null });
+      setCloseReason('');
+      fetchRequests();
+    } catch (error: unknown) {
+      alert(getApiErrorMessage(error, 'Lỗi khi đóng yêu cầu'));
+    } finally {
+      setIsClosing(false);
+    }
+  };
+
+  const columns: Column<SupportRequest>[] = [
     { header: 'Mã TB', accessor: 'assetCode' },
     { header: 'Tên TB', accessor: 'assetName' },
     { header: 'Mô tả lỗi', accessor: 'description' },
@@ -53,7 +80,7 @@ const KTVDashboard: React.FC = () => {
     { 
       header: 'Trạng thái', 
       accessor: 'status',
-      render: (item: any) => (
+      render: (item) => (
         <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
           {STATUS_LABELS[item.status] || item.status}
         </span>
@@ -80,6 +107,14 @@ const KTVDashboard: React.FC = () => {
               Lập biên bản
             </button>
           )}
+          {item.status === 'inspecting' && (
+            <button 
+              onClick={() => setCloseModalState({ isOpen: true, requestId: item.id })}
+              className="px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
+            >
+              Đóng yêu cầu
+            </button>
+          )}
         </div>
       )
     }
@@ -98,6 +133,41 @@ const KTVDashboard: React.FC = () => {
           isLoading={isLoading}
         />
       </div>
+
+      {closeModalState.isOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+            <h3 className="text-lg font-bold text-[#191c1d] mb-4">Đóng yêu cầu (Không có lỗi)</h3>
+            <p className="text-sm text-[#44474c] mb-4">
+              Bạn đang đóng yêu cầu báo hỏng mà không lập biên bản sửa chữa. Vui lòng ghi rõ lý do (ví dụ: máy tính bị lỏng dây nguồn, thiết bị hoạt động bình thường,...).
+            </p>
+            <textarea
+              className="w-full p-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 min-h-[100px] resize-none mb-4"
+              placeholder="Nhập lý do đóng yêu cầu..."
+              value={closeReason}
+              onChange={(e) => setCloseReason(e.target.value)}
+            />
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setCloseModalState({ isOpen: false, requestId: null });
+                  setCloseReason('');
+                }}
+                className="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleCloseRequest}
+                disabled={!closeReason.trim() || isClosing}
+                className="px-4 py-2 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg disabled:opacity-50"
+              >
+                {isClosing ? 'Đang xử lý...' : 'Xác nhận đóng'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

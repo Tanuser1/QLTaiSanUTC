@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { yeucauService } from '../../services/yeucauService';
 import SimpleTable from '../../components/common/SimpleTable';
+import type { Column } from '../../components/common/SimpleTable';
 import type { SupportRequest } from '../../types/yeucau.types';
 
 const STATUS_LABELS: Record<string, string> = {
@@ -43,15 +44,15 @@ const GVYeuCau: React.FC = () => {
     fetchRequests();
   }, []);
 
-  const columns = [
+  const columns: Column<SupportRequest>[] = [
     { header: 'Mã tài sản', accessor: 'assetCode' },
     { header: 'Tên thiết bị', accessor: 'assetName' },
     { header: 'Mô tả lỗi', accessor: 'description' },
-    { header: 'Ngày gửi', accessor: 'createdAt', render: (item: any) => new Date(item.createdAt).toLocaleDateString('vi-VN') },
+    { header: 'Ngày gửi', accessor: 'createdAt', render: (item) => new Date(item.createdAt).toLocaleDateString('vi-VN') },
     { 
       header: 'Trạng thái', 
       accessor: 'status',
-      render: (item: any) => (
+      render: (item) => (
         <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[item.status] || 'bg-gray-100 text-gray-800'}`}>
           {STATUS_LABELS[item.status] || item.status}
         </span>

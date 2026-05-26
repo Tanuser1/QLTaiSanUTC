@@ -2,8 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { yeucauService } from '../../services/yeucauService';
 import { userService } from '../../services/userService';
 import SimpleTable from '../../components/common/SimpleTable';
+import type { Column } from '../../components/common/SimpleTable';
 import type { SupportRequest } from '../../types/yeucau.types';
 import type { ApiUser } from '../../types/User';
+
+const getApiErrorMessage = (error: unknown, fallback: string) => {
+  if (typeof error === 'object' && error !== null && 'response' in error) {
+    const response = (error as { response?: { data?: { message?: unknown } } }).response;
+    if (typeof response?.data?.message === 'string') return response.data.message;
+  }
+  return fallback;
+};
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'Chờ tiếp nhận',
@@ -80,8 +89,8 @@ const DeviceRequestPage: React.FC = () => {
       await yeucauService.assign(selectedRequestId, Number(selectedTechId));
       fetchRequests();
       closeAssignModal();
-    } catch (error: any) {
-      alert(error.response?.data?.message || 'Lỗi khi phân công KTV');
+    } catch (error: unknown) {
+      alert(getApiErrorMessage(error, 'Lỗi khi phân công KTV'));
     } finally {
       setIsAssigning(false);
     }
@@ -94,12 +103,12 @@ const DeviceRequestPage: React.FC = () => {
     try {
       await yeucauService.reject(id, reason);
       fetchRequests();
-    } catch (error) {
+    } catch {
       alert('Lỗi khi từ chối yêu cầu');
     }
   };
 
-  const columns = [
+  const columns: Column<SupportRequest>[] = [
     { header: 'Mã TB', accessor: 'assetCode' },
     { header: 'Tên thiết bị', accessor: 'assetName' },
     { header: 'Mô tả lỗi', accessor: 'description' },
@@ -108,7 +117,7 @@ const DeviceRequestPage: React.FC = () => {
     { 
       header: 'Trạng thái', 
       accessor: 'status',
-      render: (item: any) => (
+      render: (item) => (
         <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[item.status] || 'bg-gray-100 text-gray-800'}`}>
           {STATUS_LABELS[item.status] || item.status}
         </span>

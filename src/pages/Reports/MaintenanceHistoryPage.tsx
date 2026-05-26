@@ -319,7 +319,7 @@ const MaintenanceHistoryPage: React.FC = () => {
                       </td>
                       <td className="px-4 py-3 text-sm text-[#44474c] whitespace-nowrap">{r.khoaName}</td>
                       <td className="px-4 py-3 text-center text-sm text-[#44474c] whitespace-nowrap">{fmtDate(r.date)}</td>
-                      <td className="px-4 py-3 text-right font-mono text-xs font-semibold text-[#191c1d] whitespace-nowrap">
+                      <td className="px-4 py-3 text-right text-sm font-semibold text-[#191c1d] whitespace-nowrap">
                         {r.cost > 0 ? fmtCurrency(r.cost) : <span className="text-[#c4c6cd]">—</span>}
                       </td>
                       <td className="px-4 py-3 text-sm text-[#44474c] whitespace-nowrap">{r.ktvName}</td>

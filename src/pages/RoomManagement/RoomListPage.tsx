@@ -7,7 +7,6 @@ import apiClient from '../../services/apiClient';
 import { phongService } from '../../services/phongService';
 import { ConfirmModal } from '../../components/common/ConfirmModal';
 import type { Room, RoomFormPayload } from '../../types/Room';
-import type { ApiAsset } from '../../types/Asset';
 
 /* ── Constants ────────────────────────────────────────────────── */
 const LOAI_OPTIONS = [
@@ -63,10 +62,7 @@ interface RoomModalProps {
   onSaved: () => void;
 }
 
-const EMPTY_FORM = {
-  TenPhong: '', MaKhoa: '', TenToaNha: '',
-  Tang: '1', LoaiPhong: 'PhongMay', DiaChi: '', GhiChu: '',
-};
+type RoomFormKey = 'TenPhong' | 'MaKhoa' | 'TenToaNha' | 'Tang' | 'LoaiPhong' | 'DiaChi' | 'GhiChu';
 
 function RoomModal({ room, depts, onClose, onSaved }: RoomModalProps) {
   const isEdit = !!room;
@@ -82,7 +78,7 @@ function RoomModal({ room, depts, onClose, onSaved }: RoomModalProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError]   = useState<string | null>(null);
 
-  const handle = (k: keyof typeof EMPTY_FORM, v: string) =>
+  const handle = (k: RoomFormKey, v: string) =>
     setForm(p => ({ ...p, [k]: v }));
 
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {

@@ -44,10 +44,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading = false
             autoComplete="username"
             onChange={(e) => { setTenDangNhap(e.target.value); setErrors((p) => ({ ...p, tenDangNhap: undefined })); }}
             placeholder="adminutc"
-            className={`w-full pl-10 pr-4 py-2.5 text-sm rounded border bg-white text-[#191c1d] placeholder:text-[#74777d] outline-none transition-all
+            className={`w-full pl-10 pr-4 py-3 text-sm rounded-lg border bg-white text-[#191c1d] placeholder:text-[#a0a3aa] outline-none transition-all
               ${errors.tenDangNhap
                 ? 'border-[#ba1a1a] focus:ring-1 focus:ring-[#ba1a1a]'
-                : 'border-[#c4c6cd] focus:border-[#26a69a] focus:ring-1 focus:ring-[#26a69a]'}`}
+                : 'border-[#c4c6cd] focus:border-[#1f305e] focus:ring-1 focus:ring-[#1f305e]'}`}
           />
         </div>
         {errors.tenDangNhap && (
@@ -71,10 +71,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading = false
             autoComplete="current-password"
             onChange={(e) => { setMatKhau(e.target.value); setErrors((p) => ({ ...p, matKhau: undefined })); }}
             placeholder="••••••••"
-            className={`w-full pl-10 pr-10 py-2.5 text-sm rounded border bg-white text-[#191c1d] placeholder:text-[#74777d] outline-none transition-all
+            className={`w-full pl-10 pr-10 py-3 text-sm rounded-lg border bg-white text-[#191c1d] placeholder:text-[#a0a3aa] outline-none transition-all
               ${errors.matKhau
                 ? 'border-[#ba1a1a] focus:ring-1 focus:ring-[#ba1a1a]'
-                : 'border-[#c4c6cd] focus:border-[#26a69a] focus:ring-1 focus:ring-[#26a69a]'}`}
+                : 'border-[#c4c6cd] focus:border-[#1f305e] focus:ring-1 focus:ring-[#1f305e]'}`}
           />
           <button
             type="button"
@@ -94,13 +94,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading = false
       {/* Remember + Forgot */}
       <div className="flex items-center justify-between">
         <label className="flex items-center gap-2 cursor-pointer select-none">
-          <input type="checkbox" className="w-4 h-4 rounded border-[#c4c6cd] accent-[#26a69a]" />
-          <span className="text-sm text-[#44474c]">Ghi nhớ đăng nhập</span>
+          <input type="checkbox" className="w-4 h-4 rounded border-[#c4c6cd] accent-[#1f305e]" />
+          <span className="text-sm font-medium text-[#44474c]">Ghi nhớ đăng nhập</span>
         </label>
-        <a href="#" className="text-sm text-[#26a69a] hover:underline font-medium">Quên mật khẩu?</a>
+        <a href="#" className="text-sm text-[#1f305e] hover:underline font-medium">Quên mật khẩu?</a>
       </div>
 
-      <Button type="submit" variant="primary" size="lg" loading={isLoading} className="w-full mt-1">
+      <Button type="submit" variant="primary" size="lg" loading={isLoading} className="w-full mt-4 bg-[#1f305e] hover:bg-[#162447] text-white py-3.5 rounded-lg font-semibold text-base transition-colors border-none shadow-sm">
         {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
       </Button>
     </form>

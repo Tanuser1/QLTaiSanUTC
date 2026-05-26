@@ -1,18 +1,18 @@
 import React from 'react';
 
-export interface Column<T> {
+export interface Column<T extends object> {
   header: string;
   accessor: keyof T | string;
   render?: (item: T) => React.ReactNode;
 }
 
-export interface SimpleTableProps<T> {
+export interface SimpleTableProps<T extends object> {
   columns: Column<T>[];
   data: T[];
   isLoading?: boolean;
 }
 
-export function SimpleTable<T>({ columns, data, isLoading }: SimpleTableProps<T>) {
+export function SimpleTable<T extends object>({ columns, data, isLoading }: SimpleTableProps<T>) {
   return (
     <div className="overflow-x-auto w-full">
       <table className="w-full text-left border-collapse min-w-[600px]">
@@ -45,7 +45,7 @@ export function SimpleTable<T>({ columns, data, isLoading }: SimpleTableProps<T>
               <tr key={i} className="hover:bg-gray-50 transition-colors">
                 {columns.map((col, j) => (
                   <td key={j} className="px-4 py-3 text-sm text-[#191c1d]">
-                    {col.render ? col.render(item) : String((item as any)[col.accessor] ?? '')}
+                    {col.render ? col.render(item) : String((item as Record<string, unknown>)[String(col.accessor)] ?? '')}
                   </td>
                 ))}
               </tr>
