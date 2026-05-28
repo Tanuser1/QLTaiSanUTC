@@ -29,18 +29,18 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // ============================================================
 // Routes
 // ============================================================
-const authRoutes        = require('./routes/auth');
-const phongRoutes       = require('./routes/phong');
-const taiSanRoutes      = require('./routes/taisan');
-const loaiTaiSanRoutes  = require('./routes/loaitaisan');
-const linhKienRoutes    = require('./routes/linhkien');
-const adminRoutes       = require('./routes/admin'); // Dashboard
-const nhaCungCapRoutes  = require('./routes/nhacc');
-const khoaRoutes        = require('./routes/khoa');
-const userRoutes        = require('./routes/users');
-const yeucauRoutes      = require('./routes/yeucau');
-const bienbanRoutes     = require('./routes/bienban');
-const thongbaoRoutes    = require('./routes/thongbao');
+const authRoutes = require('./routes/auth');
+const phongRoutes = require('./routes/phong');
+const taiSanRoutes = require('./routes/taisan');
+const loaiTaiSanRoutes = require('./routes/loaitaisan');
+const linhKienRoutes = require('./routes/linhkien');
+const adminRoutes = require('./routes/admin'); // Dashboard
+const nhaCungCapRoutes = require('./routes/nhacc');
+const khoaRoutes = require('./routes/khoa');
+const userRoutes = require('./routes/users');
+const yeucauRoutes = require('./routes/yeucau');
+const bienbanRoutes = require('./routes/bienban');
+const thongbaoRoutes = require('./routes/thongbao');
 
 // ---- Auth ----
 app.use('/api/auth', authRoutes);
@@ -82,22 +82,22 @@ app.use('/api/thongbao', thongbaoRoutes);
 // Health check
 // ============================================================
 app.get('/api/health', (req, res) => {
-    res.json({ success: true, message: 'Server QLTaiSanUTC đang chạy', timestamp: new Date() });
+  res.json({ success: true, message: 'Server QLTaiSanUTC đang chạy', timestamp: new Date() });
 });
 
 // ============================================================
 // 404 handler
 // ============================================================
 app.use((req, res) => {
-    res.status(404).json({ success: false, message: `Route ${req.method} ${req.path} không tồn tại` });
+  res.status(404).json({ success: false, message: `Route ${req.method} ${req.path} không tồn tại` });
 });
 
 // ============================================================
 // Error handler
 // ============================================================
 app.use((err, req, res, next) => {
-    console.error('[GLOBAL ERROR]', err);
-    res.status(500).json({ success: false, message: 'Lỗi server không xác định', error: err.message });
+  console.error('[GLOBAL ERROR]', err);
+  res.status(500).json({ success: false, message: 'Lỗi server không xác định', error: err.message });
 });
 
 // ============================================================
@@ -105,6 +105,5 @@ app.use((err, req, res, next) => {
 // ============================================================
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`✅ Server QLTaiSanUTC đang chạy tại http://localhost:${PORT}`);
-    console.log(`   API docs: xem file API_DOCS.md`);
+  console.log(`✅ Server QLTaiSanUTC đang chạy tại http://localhost:${PORT}`);
 });
